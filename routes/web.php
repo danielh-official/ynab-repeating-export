@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\YnabController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('/privacy', PrivacyController::class)->name('privacy');
+
+Route::get('guide', GuideController::class)->name('guide');
 
 Route::post('export', ExportController::class)->name('export');
 
