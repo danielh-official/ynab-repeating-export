@@ -17,7 +17,14 @@ class ExportController extends Controller
      */
     public function __invoke(Request $request): Response|BinaryFileResponse
     {
-        $accessToken = $request->input('access_token');
+        $accessToken = $request->cookie('ynab_access_token');
+
+        if ($accessToken) {
+            $accessToken = decrypt($accessToken);
+        } else {
+            return response('No access token', 404);
+        }
+
         $fileExtension = $request->input('file_extension', 'csv');
 
         $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets?include_accounts=true");
