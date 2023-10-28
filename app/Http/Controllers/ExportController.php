@@ -18,6 +18,7 @@ class ExportController extends Controller
     public function __invoke(Request $request): Response|BinaryFileResponse
     {
         $accessToken = $request->input('access_token');
+        $fileExtension = $request->input('file_extension', 'csv');
 
         $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets?include_accounts=true");
 
@@ -50,6 +51,22 @@ class ExportController extends Controller
 
         $todaysDateFileFriendlyName = now()->format('Y-m-d');
 
-        return (new RepeatingTransactionExport($scheduledTransactions))->download("$todaysDateFileFriendlyName-ynab-repeating-transactions.csv", Excel::CSV, ['Content-Type' => 'text/csv']);
+        if ($fileExtension === 'csv') {
+            $writerType = Excel::CSV;
+        } else if ($fileExtension === 'excel') {
+            $writerType = Excel::XLSX;
+        } else {
+            $writerType = Excel::CSV;
+        }
+
+        if ($fileExtension === 'csv') {
+            $fileStringExtension = 'csv';
+        } else if ($fileExtension === 'excel') {
+            $fileStringExtension = 'xlsx';
+        } else {
+            $fileStringExtension = 'csv';
+        }
+
+        return (new RepeatingTransactionExport($scheduledTransactions))->download("$todaysDateFileFriendlyName-ynab-repeating-transactions.$fileStringExtension", $writerType);
     }
 }
