@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\YnabController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,8 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomeController::class)->name('home');
 
 Route::post('export', ExportController::class)->name('export');
+
+Route::prefix('ynab')->name('ynab.')->controller(YnabController::class)->group(function () {
+    Route::get('callback', 'callback')->name('callback');
+});
