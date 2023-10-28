@@ -1,22 +1,4 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{{ config('app.name') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet"/>
-
-    <!-- Styles -->
-    @vite('resources/css/app.css')
-</head>
-<body class="antialiased">
-<div
-    class="relative flex justify-center items-center min-h-screen bg-dots-darker bg-center bg-gray-100 dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white">
-
+<x-layout>
     @isset($error)
         <div class="absolute top-0 left-0 right-0 p-4 bg-red-500 text-white">
             {{ $error }}
@@ -24,17 +6,19 @@
     @endif
 
     @if($access_token)
-        <form method="POST" action="{{ route('export') }}" class="space-y-2">
+        <form method="POST" action="{{ route('export') }}" class="space-y-4">
             @csrf
 
             <div>
-                <label>
+                <label for="file_extension" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Select a File Extension
-                    <select name="file_extension" id="file_extension">
-                        <option value="csv">CSV</option>
-                        <option value="excel">Excel</option>
-                    </select>
                 </label>
+                <select
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    name="file_extension" id="file_extension">
+                    <option value="csv">CSV</option>
+                    <option value="excel">Excel</option>
+                </select>
             </div>
             <div>
                 <button
@@ -46,6 +30,15 @@
     @else
         <a href="{{ $auth_url }}">Authenticate YNAB</a>
     @endif
-</div>
-</body>
-</html>
+
+    <div class="mt-8 flex flex-col space-y-2 text-center">
+        <div>
+            <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('privacy') }}">Privacy
+                Policy</a>
+        </div>
+        <div>
+            <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+               href="{{ route('guide') }}">Guide</a>
+        </div>
+    </div>
+</x-layout>
