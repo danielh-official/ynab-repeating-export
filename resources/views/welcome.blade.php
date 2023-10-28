@@ -26,6 +26,15 @@
             </label>
         </div>
         <div>
+            <label>
+                Select a File Extension
+                <select name="file_extension" id="file_extension">
+                    <option value="csv">CSV</option>
+                    <option value="excel">Excel</option>
+                </select>
+            </label>
+        </div>
+        <div>
             <button type="submit">Export Transactions</button>
         </div>
     </form>
