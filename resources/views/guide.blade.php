@@ -26,6 +26,9 @@
             </li>
             <li class="list-item"><b class="font-bold">Payee Name</b>: The payee of the transaction.</li>
             <li class="list-item"><b class="font-bold">Category Name</b>: The category of the transaction.</li>
+            <li class="list-item"><b class="font-bold">Category Group Name</b>: The category group for the category of
+                the transaction.
+            </li>
             <li class="list-item"><b class="font-bold">Memo</b>: The memo of the transaction.</li>
             <li class="list-item"><b class="font-bold">Account Name</b>: The account of the transaction.</li>
             <li class="list-item"><b class="font-bold">Flag Color</b>: The flag color of the transaction.</li>
