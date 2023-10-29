@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
+    /**
+     * @param YnabAccessTokenService $ynabAccessTokenService
+     */
     public function __construct(
         private readonly YnabAccessTokenService $ynabAccessTokenService,
     )
