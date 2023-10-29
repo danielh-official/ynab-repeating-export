@@ -3,21 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RepeatingTransactionExport;
+use App\Services\YnabAccessTokenService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
+    public function __construct(
+        private readonly YnabAccessTokenService $ynabAccessTokenService,
+    )
+    {
+    }
+
     /**
      * @param Request $request
      * @param string $budgetId
@@ -96,7 +99,7 @@ class ExportController extends Controller
     /**
      * @param Request $request
      * @param string $budgetId
-     * @return array|Collection|mixed
+     * @return Collection
      * @throws Exception
      */
     private function getCategories(Request $request, string $budgetId = 'default')
@@ -175,7 +178,7 @@ class ExportController extends Controller
             $scheduledTransactions = $this->getScheduledTransactions($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
-                $request->session()->forget('ynab_access_token');
+                $this->ynabAccessTokenService->delete($request);
 
                 return redirect()->route('home')->with('error', 'Failed to get scheduled transactions. Please re-authenticate.');
             }
@@ -187,7 +190,7 @@ class ExportController extends Controller
             $accounts = $this->getAccounts($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
-                $request->session()->forget('ynab_access_token');
+                $this->ynabAccessTokenService->delete($request);
 
                 return redirect()->route('home')->with('error', 'Failed to get accounts. Please re-authenticate.');
             }
@@ -199,7 +202,7 @@ class ExportController extends Controller
             $payees = $this->getPayees($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
-                $request->session()->forget('ynab_access_token');
+                $this->ynabAccessTokenService->delete($request);
 
                 return redirect()->route('home')->with('error', 'Failed to get payees. Please re-authenticate.');
             }
@@ -211,7 +214,7 @@ class ExportController extends Controller
             $categories = $this->getCategories($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
-                $request->session()->forget('ynab_access_token');
+                $this->ynabAccessTokenService->delete($request);
 
                 return redirect()->route('home')->with('error', 'Failed to get categories. Please re-authenticate.');
             }
@@ -236,12 +239,6 @@ class ExportController extends Controller
      */
     public function retrieveAccessToken(Request $request): mixed
     {
-        $accessToken = $request->session()->get('ynab_access_token');
-
-        if (!$accessToken) {
-            throw new Exception('No access token');
-        }
-
-        return $accessToken;
+        return $this->ynabAccessTokenService->get($request);
     }
 }
