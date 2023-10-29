@@ -3,6 +3,11 @@
 namespace App\Exports;
 
 use App\Enums\YnabAcceptedFrequency;
+use App\Services\YnabScheduledTransactionService;
+use App\Transformers\YnabAccountTransformer;
+use App\Transformers\YnabCategoryTransformer;
+use App\Transformers\YnabPayeeTransformer;
+use App\Transformers\YnabScheduledTransactionTransformer;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Exportable;
@@ -15,49 +20,38 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 
     private Collection $data;
 
+    private readonly Collection $scheduledTransactions;
+    private readonly Collection $accounts;
+    private readonly Collection $payees;
+    private readonly Collection $categories;
+
+    private YnabScheduledTransactionService $ynabScheduledTransactionService;
+
     public function __construct(
-        private readonly Collection $scheduledTransactions,
-        private readonly Collection $accounts,
-        private readonly Collection $payees,
-        private readonly Collection $categories,
+        private readonly YnabScheduledTransactionTransformer $ynabScheduledTransactionTransformer,
+        private readonly YnabCategoryTransformer             $ynabCategoryTransformer,
+        private readonly YnabAccountTransformer              $ynabAccountTransformer,
+        private readonly YnabPayeeTransformer                $ynabPayeeTransformer,
     )
     {
+        $this->scheduledTransactions = $this->ynabScheduledTransactionTransformer->get()->where('deleted', false);
+        $this->accounts = $this->ynabAccountTransformer->get()->where('deleted', false);
+        $this->payees = $this->ynabPayeeTransformer->get()->where('deleted', false);
+        $this->categories = $this->ynabCategoryTransformer->get()->where('deleted', false);
+
+        $this->ynabScheduledTransactionService = resolve(YnabScheduledTransactionService::class, [
+            'scheduledTransactions' => $this->scheduledTransactions,
+            'accounts' => $this->accounts,
+            'payees' => $this->payees,
+            'categories' => $this->categories,
+        ]);
+
         $this->mergeLiveData();
     }
 
     private function mergeLiveData(): void
     {
-        $data = collect();
-
-        foreach ($this->scheduledTransactions as $scheduledTransaction) {
-            $accountId = data_get($scheduledTransaction, 'account_id');
-            $account = $this->accounts->firstWhere('id', $accountId);
-
-            $payeeId = data_get($scheduledTransaction, 'payee_id');
-            $payee = $this->payees->firstWhere('id', $payeeId);
-
-            $categoryId = data_get($scheduledTransaction, 'category_id');
-            $category = $this->categories->firstWhere('id', $categoryId);
-
-            $transferAccountId = data_get($scheduledTransaction, 'transfer_account_id');
-            $transferAccount = $this->accounts->firstWhere('id', $transferAccountId);
-
-            $data->push([
-                'deleted' => data_get($scheduledTransaction, 'deleted'),
-                'frequency' => data_get($scheduledTransaction, 'frequency'),
-                'date_first' => data_get($scheduledTransaction, 'date_first'),
-                'date_next' => data_get($scheduledTransaction, 'date_next'),
-                'amount' => data_get($scheduledTransaction, 'amount'),
-                'memo' => data_get($scheduledTransaction, 'memo'),
-                'flag_color' => data_get($scheduledTransaction, 'flag_color'),
-                'account' => $account,
-                'payee' => $payee,
-                'category' => $category,
-                'transfer_account' => $transferAccount,
-            ]);
-        }
-
-        $this->data = $data;
+        $this->data = $this->ynabScheduledTransactionService->merge();
     }
 
     private function parseLiveData(): Collection
@@ -136,6 +130,7 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 
     /**
      * @return string[]
+     * @codeCoverageIgnore
      */
     public function headings(): array
     {
