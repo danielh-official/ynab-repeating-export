@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\RepeatingTransactionExport;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -17,8 +18,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
-    private mixed $lastServerKnowledge;
-
     /**
      * @param Request $request
      * @param string $budgetId
@@ -27,24 +26,12 @@ class ExportController extends Controller
      */
     private function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
-        $lastServerKnowledge = $this->retrieveLastServerKnowledge($request);
+        $accessToken = $this->retrieveAccessToken($request);
 
-        $accessToken = $request->cookie('ynab_access_token');
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
 
-        if ($accessToken) {
-            $accessToken = decrypt($accessToken);
-        } else {
-            throw new Exception('No access token');
-        }
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions", [
-            'last_knowledge_of_server' => $lastServerKnowledge,
-        ]);
-
-        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
-
-        if ($serverKnowledge) {
-            $this->lastServerKnowledge = $serverKnowledge;
+        if ($response->failed()) {
+            throw new Exception('Failed to get scheduled transactions', $response->status());
         }
 
         $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
@@ -64,24 +51,12 @@ class ExportController extends Controller
      */
     private function getAccounts(Request $request, string $budgetId = 'default')
     {
-        $lastServerKnowledge = $this->retrieveLastServerKnowledge($request);
+        $accessToken = $this->retrieveAccessToken($request);
 
-        $accessToken = $request->cookie('ynab_access_token');
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
 
-        if ($accessToken) {
-            $accessToken = decrypt($accessToken);
-        } else {
-            throw new Exception('No access token');
-        }
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts", [
-            'last_knowledge_of_server' => $lastServerKnowledge,
-        ]);
-
-        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
-
-        if ($serverKnowledge) {
-            $this->lastServerKnowledge = $serverKnowledge;
+        if ($response->failed()) {
+            throw new Exception('Failed to get accounts', $response->status());
         }
 
         $accounts = data_get($response->json(), 'data.accounts', collect());
@@ -101,24 +76,12 @@ class ExportController extends Controller
      */
     private function getPayees(Request $request, string $budgetId = 'default')
     {
-        $serverKnowledge = $this->retrieveLastServerKnowledge($request);
+        $accessToken = $this->retrieveAccessToken($request);
 
-        $accessToken = $request->cookie('ynab_access_token');
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
 
-        if ($accessToken) {
-            $accessToken = decrypt($accessToken);
-        } else {
-            throw new Exception('No access token');
-        }
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees", [
-            'last_knowledge_of_server' => $serverKnowledge,
-        ]);
-
-        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
-
-        if ($serverKnowledge) {
-            $this->lastServerKnowledge = $serverKnowledge;
+        if ($response->failed()) {
+            throw new Exception('Failed to get payees', $response->status());
         }
 
         $payees = data_get($response->json(), 'data.payees', collect());
@@ -138,24 +101,12 @@ class ExportController extends Controller
      */
     private function getCategories(Request $request, string $budgetId = 'default')
     {
-        $serverKnowledge = $this->retrieveLastServerKnowledge($request);
+        $accessToken = $this->retrieveAccessToken($request);
 
-        $accessToken = $request->cookie('ynab_access_token');
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
 
-        if ($accessToken) {
-            $accessToken = decrypt($accessToken);
-        } else {
-            throw new Exception('No access token');
-        }
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories", [
-            'last_knowledge_of_server' => $serverKnowledge,
-        ]);
-
-        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
-
-        if ($serverKnowledge) {
-            $this->lastServerKnowledge = $serverKnowledge;
+        if ($response->failed()) {
+            throw new Exception('Failed to get categories', $response->status());
         }
 
         $categories = data_get($response->json(), 'data.category_groups', collect());
@@ -208,7 +159,7 @@ class ExportController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request): Response|BinaryFileResponse
+    public function __invoke(Request $request): Response|BinaryFileResponse|RedirectResponse
     {
         $fileExtension = $request->input('file_extension', 'csv');
 
@@ -223,30 +174,52 @@ class ExportController extends Controller
         try {
             $scheduledTransactions = $this->getScheduledTransactions($request);
         } catch (Exception $e) {
+            if ($e->getCode() === 401) {
+                $request->session()->forget('ynab_access_token');
+
+                return redirect()->route('home')->with('error', 'Failed to get scheduled transactions. Please re-authenticate.');
+            }
+
             return response($e->getMessage(), 404);
         }
 
         try {
             $accounts = $this->getAccounts($request);
         } catch (Exception $e) {
+            if ($e->getCode() === 401) {
+                $request->session()->forget('ynab_access_token');
+
+                return redirect()->route('home')->with('error', 'Failed to get accounts. Please re-authenticate.');
+            }
+
             return response($e->getMessage(), 404);
         }
 
         try {
             $payees = $this->getPayees($request);
         } catch (Exception $e) {
+            if ($e->getCode() === 401) {
+                $request->session()->forget('ynab_access_token');
+
+                return redirect()->route('home')->with('error', 'Failed to get payees. Please re-authenticate.');
+            }
+
             return response($e->getMessage(), 404);
         }
 
         try {
             $categories = $this->getCategories($request);
         } catch (Exception $e) {
+            if ($e->getCode() === 401) {
+                $request->session()->forget('ynab_access_token');
+
+                return redirect()->route('home')->with('error', 'Failed to get categories. Please re-authenticate.');
+            }
+
             return response($e->getMessage(), 404);
         }
 
         $fileName = $this->buildFileName($request);
-
-        $request->session()->put('ynab_server_knowledge', $this->lastServerKnowledge);
 
         return (new RepeatingTransactionExport(
             scheduledTransactions: $scheduledTransactions,
@@ -258,16 +231,17 @@ class ExportController extends Controller
 
     /**
      * @param Request $request
-     * @return array|string|null
+     * @return mixed
+     * @throws Exception
      */
-    private function retrieveLastServerKnowledge(Request $request): string|array|null
+    public function retrieveAccessToken(Request $request): mixed
     {
-        $onlyRetrieveChangedRecords = $request->input('only_retrieve_changed_records', null);
+        $accessToken = $request->session()->get('ynab_access_token');
 
-        if (!$onlyRetrieveChangedRecords) {
-            return null;
+        if (!$accessToken) {
+            throw new Exception('No access token');
         }
 
-        return $request->session()->get('ynab_server_knowledge');
+        return $accessToken;
     }
 }
