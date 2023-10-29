@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Exports\RepeatingTransactionExport;
 use App\Services\YnabAccessTokenService;
+use App\Services\YnabLastKnowledgeOfServerService;
+use App\Transformers\YnabAccountTransformer;
+use App\Transformers\YnabCategoryTransformer;
+use App\Transformers\YnabPayeeTransformer;
+use App\Transformers\YnabScheduledTransactionTransformer;
 use Exception;
+use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Session\SessionManager;
+use Illuminate\Session\Store;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Excel;
@@ -19,7 +28,12 @@ class ExportController extends Controller
      * @param YnabAccessTokenService $ynabAccessTokenService
      */
     public function __construct(
-        private readonly YnabAccessTokenService $ynabAccessTokenService,
+        private readonly YnabAccessTokenService              $ynabAccessTokenService,
+        private readonly YnabScheduledTransactionTransformer $ynabScheduledTransactionTransformer,
+        private readonly YnabAccountTransformer              $ynabAccountTransformer,
+        private readonly YnabCategoryTransformer             $ynabCategoryTransformer,
+        private readonly YnabPayeeTransformer                $ynabPayeeTransformer,
+        private readonly YnabLastKnowledgeOfServerService    $ynabLastKnowledgeOfServerService,
     )
     {
     }
@@ -27,18 +41,22 @@ class ExportController extends Controller
     /**
      * @param Request $request
      * @param string $budgetId
-     * @return array|Collection|mixed
+     * @return void
      * @throws Exception
      */
     private function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions", [
+            'last_knowledge_of_server' => $this->getLastKnowledgeOfServer(),
+        ]);
 
         if ($response->failed()) {
             throw new Exception('Failed to get scheduled transactions', $response->status());
         }
+
+        $this->retrieveAndStoreLastKnowledgeOfServerFromResponse($response, $request);
 
         $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
 
@@ -46,24 +64,30 @@ class ExportController extends Controller
             $scheduledTransactions = collect($scheduledTransactions);
         }
 
-        return $scheduledTransactions;
+        foreach ($scheduledTransactions as $scheduledTransaction) {
+            $this->ynabScheduledTransactionTransformer->store($scheduledTransaction);
+        }
     }
 
     /**
      * @param Request $request
      * @param string $budgetId
-     * @return array|Collection|mixed
+     * @return void
      * @throws Exception
      */
     private function getAccounts(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts", [
+            'last_knowledge_of_server' => $this->getLastKnowledgeOfServer(),
+        ]);
 
         if ($response->failed()) {
             throw new Exception('Failed to get accounts', $response->status());
         }
+
+        $this->retrieveAndStoreLastKnowledgeOfServerFromResponse($response, $request);
 
         $accounts = data_get($response->json(), 'data.accounts', collect());
 
@@ -71,24 +95,30 @@ class ExportController extends Controller
             $accounts = collect($accounts);
         }
 
-        return $accounts;
+        foreach ($accounts as $account) {
+            $this->ynabAccountTransformer->store($account);
+        }
     }
 
     /**
      * @param Request $request
      * @param string $budgetId
-     * @return array|Collection|mixed
+     * @return void
      * @throws Exception
      */
     private function getPayees(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees", [
+            'last_knowledge_of_server' => $this->getLastKnowledgeOfServer(),
+        ]);
 
         if ($response->failed()) {
             throw new Exception('Failed to get payees', $response->status());
         }
+
+        $this->retrieveAndStoreLastKnowledgeOfServerFromResponse($response, $request);
 
         $payees = data_get($response->json(), 'data.payees', collect());
 
@@ -96,24 +126,30 @@ class ExportController extends Controller
             $payees = collect($payees);
         }
 
-        return $payees;
+        foreach ($payees as $payee) {
+            $this->ynabPayeeTransformer->store($payee);
+        }
     }
 
     /**
      * @param Request $request
      * @param string $budgetId
-     * @return Collection
+     * @return void
      * @throws Exception
      */
     private function getCategories(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories", [
+            'last_knowledge_of_server' => $this->getLastKnowledgeOfServer(),
+        ]);
 
         if ($response->failed()) {
             throw new Exception('Failed to get categories', $response->status());
         }
+
+        $this->retrieveAndStoreLastKnowledgeOfServerFromResponse($response, $request);
 
         $categories = data_get($response->json(), 'data.category_groups', collect());
 
@@ -121,7 +157,11 @@ class ExportController extends Controller
             $categories = collect($categories);
         }
 
-        return $this->flattenCategories($categories);
+        $categories = $this->flattenCategories($categories);
+
+        foreach ($categories as $category) {
+            $this->ynabCategoryTransformer->store($category);
+        }
     }
 
     private function buildFileName(Request $request)
@@ -178,7 +218,7 @@ class ExportController extends Controller
         }
 
         try {
-            $scheduledTransactions = $this->getScheduledTransactions($request);
+            $this->getScheduledTransactions($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
                 $this->ynabAccessTokenService->delete($request);
@@ -190,7 +230,7 @@ class ExportController extends Controller
         }
 
         try {
-            $accounts = $this->getAccounts($request);
+            $this->getAccounts($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
                 $this->ynabAccessTokenService->delete($request);
@@ -202,7 +242,7 @@ class ExportController extends Controller
         }
 
         try {
-            $payees = $this->getPayees($request);
+            $this->getPayees($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
                 $this->ynabAccessTokenService->delete($request);
@@ -214,7 +254,7 @@ class ExportController extends Controller
         }
 
         try {
-            $categories = $this->getCategories($request);
+            $this->getCategories($request);
         } catch (Exception $e) {
             if ($e->getCode() === 401) {
                 $this->ynabAccessTokenService->delete($request);
@@ -228,10 +268,10 @@ class ExportController extends Controller
         $fileName = $this->buildFileName($request);
 
         return (new RepeatingTransactionExport(
-            scheduledTransactions: $scheduledTransactions,
-            accounts: $accounts,
-            payees: $payees,
-            categories: $categories,
+            ynabScheduledTransactionTransformer: $this->ynabScheduledTransactionTransformer,
+            ynabCategoryTransformer: $this->ynabCategoryTransformer,
+            ynabAccountTransformer: $this->ynabAccountTransformer,
+            ynabPayeeTransformer: $this->ynabPayeeTransformer,
         ))->download($fileName, $writerType);
     }
 
@@ -243,5 +283,25 @@ class ExportController extends Controller
     public function retrieveAccessToken(Request $request): mixed
     {
         return $this->ynabAccessTokenService->get($request);
+    }
+
+    /**
+     * @param PromiseInterface|\Illuminate\Http\Client\Response $response
+     * @param Request $request
+     * @return void
+     */
+    private function retrieveAndStoreLastKnowledgeOfServerFromResponse(PromiseInterface|\Illuminate\Http\Client\Response $response, Request $request): void
+    {
+        $lastKnowledgeOfServer = data_get($response->json(), 'data.server_knowledge');
+
+        $this->ynabLastKnowledgeOfServerService->store($lastKnowledgeOfServer, $request);
+    }
+
+    /**
+     * @return int
+     */
+    private function getLastKnowledgeOfServer()
+    {
+        return $this->ynabLastKnowledgeOfServerService->get();
     }
 }
