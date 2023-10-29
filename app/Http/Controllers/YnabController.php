@@ -22,7 +22,9 @@ class YnabController extends Controller
         $accessToken = data_get($response->json(), 'access_token');
 
         if ($accessToken) {
-            return redirect()->route('home')->cookie('ynab_access_token', encrypt($accessToken));
+            $request->session()->put('ynab_access_token', $accessToken);
+
+            return redirect()->route('home')->with('success', 'Access token retrieved');
         } else {
             return redirect()->route('home')->with('error', 'Failed to get access token');
         }
