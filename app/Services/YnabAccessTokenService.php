@@ -9,17 +9,11 @@ class YnabAccessTokenService
 {
     /**
      * @param Request $request
+     * @param mixed $accessToken
      * @return void
-     * @throws Exception
      */
-    public function store(Request $request): void
+    public function store(Request $request, mixed $accessToken): void
     {
-        $accessToken = $request->input('access_token');
-
-        if (!$accessToken) {
-            throw new Exception('No access token');
-        }
-
         $request->session()->put('ynab_access_token', $accessToken);
     }
 
