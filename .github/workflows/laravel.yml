@@ -31,7 +31,7 @@ jobs:
     - name: Run NPM Install
       run: npm install
     - name: Generate Vite Manifest
-      run: npm run dev
+      run: npm run build
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DB_CONNECTION: sqlite
