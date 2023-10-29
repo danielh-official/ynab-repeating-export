@@ -2,11 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\YnabAccessTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class YnabController extends Controller
 {
+    /**
+     * @param YnabAccessTokenService $ynabAccessTokenService
+     */
+    public function __construct(
+        private readonly YnabAccessTokenService $ynabAccessTokenService,
+    )
+    {
+    }
+
     public function callback(Request $request)
     {
         $code = $request->query('code');
@@ -22,7 +32,7 @@ class YnabController extends Controller
         $accessToken = data_get($response->json(), 'access_token');
 
         if ($accessToken) {
-            $request->session()->put('ynab_access_token', $accessToken);
+            $this->ynabAccessTokenService->store($request, $accessToken);
 
             return redirect()->route('home')->with('success', 'Access token retrieved');
         } else {
