@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\YnabAccessTokenService;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -11,19 +12,22 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
     /**
+     * @param YnabAccessTokenService $ynabAccessTokenService
+     */
+    public function __construct(
+        private readonly YnabAccessTokenService $ynabAccessTokenService,
+    )
+    {
+    }
+
+    /**
      * @param Request $request
      * @return mixed
      * @throws Exception
      */
     private function retrieveAccessToken(Request $request): mixed
     {
-        $accessToken = $request->session()->get('ynab_access_token');
-
-        if (!$accessToken) {
-            throw new Exception('No access token');
-        }
-
-        return $accessToken;
+        return $this->ynabAccessTokenService->get($request);
     }
 
     /**
