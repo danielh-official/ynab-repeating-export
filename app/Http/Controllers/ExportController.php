@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RepeatingTransactionExport;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -13,42 +14,28 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ExportController extends Controller
 {
     /**
-     * Handle the incoming request.
+     * @param Request $request
+     * @param string $budgetId
+     * @return array|Collection|mixed
+     * @throws Exception
      */
-    public function __invoke(Request $request): Response|BinaryFileResponse
+    private function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
         $accessToken = $request->cookie('ynab_access_token');
 
         if ($accessToken) {
             $accessToken = decrypt($accessToken);
         } else {
-            return response('No access token', 404);
-        }
-
-        $fileExtension = $request->input('file_extension', 'csv');
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets?include_accounts=true");
-
-        $budgetId = data_get($response->json(), 'data.budgets.0.id', null);
-
-        if (!$budgetId) {
-
-            $error = data_get($response->json(), 'error', null);
-
-            if ($error) {
-                $errorId = data_get($error, 'id', null);
-                $errorName = data_get($error, 'name', null);
-                $errorDetail = data_get($error, 'detail', null);
-
-                $errorString = "YNAB Error $errorId: $errorName - $errorDetail";
-
-                return response($errorString, 404);
-            }
-
-            return response('Could not find budget', 404);
+            throw new Exception('No access token');
         }
 
         $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
+
+        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
+
+        if ($serverKnowledge) {
+            cookie('ynab_server_knowledge', $serverKnowledge);
+        }
 
         $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
 
@@ -56,15 +43,113 @@ class ExportController extends Controller
             $scheduledTransactions = collect($scheduledTransactions);
         }
 
-        $todaysDateFileFriendlyName = now()->format('Y-m-d');
+        return $scheduledTransactions;
+    }
 
-        if ($fileExtension === 'csv') {
-            $writerType = Excel::CSV;
-        } else if ($fileExtension === 'excel') {
-            $writerType = Excel::XLSX;
+    /**
+     * @param Request $request
+     * @param string $budgetId
+     * @return array|Collection|mixed
+     * @throws Exception
+     */
+    private function getAccounts(Request $request, string $budgetId = 'default')
+    {
+        $accessToken = $request->cookie('ynab_access_token');
+
+        if ($accessToken) {
+            $accessToken = decrypt($accessToken);
         } else {
-            $writerType = Excel::CSV;
+            throw new Exception('No access token');
         }
+
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
+
+        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
+
+        if ($serverKnowledge) {
+            cookie('ynab_server_knowledge', $serverKnowledge);
+        }
+
+        $accounts = data_get($response->json(), 'data.accounts', collect());
+
+        if (!$accounts instanceof Collection) {
+            $accounts = collect($accounts);
+        }
+
+        return $accounts;
+    }
+
+    /**
+     * @param Request $request
+     * @param string $budgetId
+     * @return array|Collection|mixed
+     * @throws Exception
+     */
+    private function getPayees(Request $request, string $budgetId = 'default')
+    {
+        $accessToken = $request->cookie('ynab_access_token');
+
+        if ($accessToken) {
+            $accessToken = decrypt($accessToken);
+        } else {
+            throw new Exception('No access token');
+        }
+
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
+
+        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
+
+        if ($serverKnowledge) {
+            cookie('ynab_server_knowledge', $serverKnowledge);
+        }
+
+        $payees = data_get($response->json(), 'data.payees', collect());
+
+        if (!$payees instanceof Collection) {
+            $payees = collect($payees);
+        }
+
+        return $payees;
+    }
+
+    /**
+     * @param Request $request
+     * @param string $budgetId
+     * @return array|Collection|mixed
+     * @throws Exception
+     */
+    private function getCategories(Request $request, string $budgetId = 'default')
+    {
+        $accessToken = $request->cookie('ynab_access_token');
+
+        if ($accessToken) {
+            $accessToken = decrypt($accessToken);
+        } else {
+            throw new Exception('No access token');
+        }
+
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
+
+        $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
+
+        if ($serverKnowledge) {
+            cookie('ynab_server_knowledge', $serverKnowledge);
+        }
+
+        $categories = data_get($response->json(), 'data.category_groups', collect());
+
+        if (!$categories instanceof Collection) {
+            $categories = collect($categories);
+        }
+
+        return $this->flattenCategories($categories);
+    }
+
+    private function buildFileName(Request $request)
+    {
+        $fileExtension = $request->input('file_extension', 'csv');
+
+        $todaysDateFileFriendlyName = now()->format('Y-m-d');
 
         if ($fileExtension === 'csv') {
             $fileStringExtension = 'csv';
@@ -74,6 +159,76 @@ class ExportController extends Controller
             $fileStringExtension = 'csv';
         }
 
-        return (new RepeatingTransactionExport($scheduledTransactions))->download("$todaysDateFileFriendlyName-ynab-repeating-transactions.$fileStringExtension", $writerType);
+        return "$todaysDateFileFriendlyName-ynab-repeating-transactions.$fileStringExtension";
+    }
+
+    private function flattenCategories(Collection|array $categories): Collection
+    {
+        $flattenedCategories = collect();
+
+        if (is_array($categories)) {
+            $categories = collect($categories);
+        }
+
+        foreach ($categories as $categoryGroup) {
+            $flattenedCategories->push($categoryGroup);
+
+            $categories = data_get($categoryGroup, 'categories');
+
+            if ($categories) {
+                $flattenedCategories = $flattenedCategories->merge($this->flattenCategories($categories));
+            }
+        }
+
+        return $flattenedCategories;
+    }
+
+    /**
+     * Handle the incoming request.
+     */
+    public function __invoke(Request $request): Response|BinaryFileResponse
+    {
+        $fileExtension = $request->input('file_extension', 'csv');
+
+        if ($fileExtension === 'csv') {
+            $writerType = Excel::CSV;
+        } else if ($fileExtension === 'excel') {
+            $writerType = Excel::XLSX;
+        } else {
+            $writerType = Excel::CSV;
+        }
+
+        try {
+            $scheduledTransactions = $this->getScheduledTransactions($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 404);
+        }
+
+        try {
+            $accounts = $this->getAccounts($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 404);
+        }
+
+        try {
+            $payees = $this->getPayees($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 404);
+        }
+
+        try {
+            $categories = $this->getCategories($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 404);
+        }
+
+        $fileName = $this->buildFileName($request);
+
+        return (new RepeatingTransactionExport(
+            scheduledTransactions: $scheduledTransactions,
+            accounts: $accounts,
+            payees: $payees,
+            categories: $categories,
+        ))->download($fileName, $writerType);
     }
 }
