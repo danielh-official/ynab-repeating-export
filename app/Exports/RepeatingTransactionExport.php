@@ -13,16 +13,58 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 {
     use Exportable;
 
-    public function __construct(private readonly Collection $scheduledTransactions)
-    {
+    private Collection $data;
 
+    public function __construct(
+        private readonly Collection $scheduledTransactions,
+        private readonly Collection $accounts,
+        private readonly Collection $payees,
+        private readonly Collection $categories,
+    )
+    {
+        $this->mergeLiveData();
+    }
+
+    private function mergeLiveData(): void
+    {
+        $data = collect();
+
+        foreach ($this->scheduledTransactions as $scheduledTransaction) {
+            $accountId = data_get($scheduledTransaction, 'account_id');
+            $account = $this->accounts->firstWhere('id', $accountId);
+
+            $payeeId = data_get($scheduledTransaction, 'payee_id');
+            $payee = $this->payees->firstWhere('id', $payeeId);
+
+            $categoryId = data_get($scheduledTransaction, 'category_id');
+            $category = $this->categories->firstWhere('id', $categoryId);
+
+            $transferAccountId = data_get($scheduledTransaction, 'transfer_account_id');
+            $transferAccount = $this->accounts->firstWhere('id', $transferAccountId);
+
+            $data->push([
+                'deleted' => data_get($scheduledTransaction, 'deleted'),
+                'frequency' => data_get($scheduledTransaction, 'frequency'),
+                'date_first' => data_get($scheduledTransaction, 'date_first'),
+                'date_next' => data_get($scheduledTransaction, 'date_next'),
+                'amount' => data_get($scheduledTransaction, 'amount'),
+                'memo' => data_get($scheduledTransaction, 'memo'),
+                'flag_color' => data_get($scheduledTransaction, 'flag_color'),
+                'account' => $account,
+                'payee' => $payee,
+                'category' => $category,
+                'transfer_account' => $transferAccount,
+            ]);
+        }
+
+        $this->data = $data;
     }
 
     private function parseLiveData(): Collection
     {
         $data = collect();
 
-        foreach ($this->scheduledTransactions as $transaction) {
+        foreach ($this->data as $transaction) {
             $isDeleted = data_get($transaction, 'deleted');
 
             if ($isDeleted) {
@@ -52,9 +94,11 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 
             $memo = data_get($transaction, 'memo');
             $flagColor = data_get($transaction, 'flag_color');
-            $accountName = data_get($transaction, 'account_name');
-            $payeeName = data_get($transaction, 'payee_name');
-            $categoryName = data_get($transaction, 'category_name');
+            $accountName = data_get($transaction, 'account.name');
+            $transferAccountName = data_get($transaction, 'transfer_account.name');
+            $payeeName = data_get($transaction, 'payee.name');
+            $categoryName = data_get($transaction, 'category.name');
+            $categoryGroupName = data_get($transaction, 'category.category_group_name');
 
             $data->push([
                 'date_first' => $dateFirst->format('Y-m-d'),
@@ -68,7 +112,8 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
                 'account_name' => $accountName,
                 'payee_name' => $payeeName,
                 'category_name' => $categoryName,
-                'transfer_account_name' => null,
+                'category_group_name' => $categoryGroupName,
+                'transfer_account_name' => $transferAccountName,
                 'raw_amount_per_week' => $amountPerWeek = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::weekly),
                 'raw_amount_per_month' => $amountPerMonth = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::monthly),
                 'raw_amount_per_year' => $amountPerYear = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::yearly),
@@ -106,6 +151,7 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             'Account Name',
             'Payee Name',
             'Category Name',
+            'Category Group Name',
             'Transfer Account Name',
             'Raw Amount Per Week',
             'Raw Amount Per Month',
