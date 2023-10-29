@@ -7,12 +7,18 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
+    private mixed $lastServerKnowledge;
+
     /**
      * @param Request $request
      * @param string $budgetId
@@ -21,6 +27,8 @@ class ExportController extends Controller
      */
     private function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
+        $lastServerKnowledge = $this->retrieveLastServerKnowledge($request);
+
         $accessToken = $request->cookie('ynab_access_token');
 
         if ($accessToken) {
@@ -29,12 +37,14 @@ class ExportController extends Controller
             throw new Exception('No access token');
         }
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions", [
+            'last_knowledge_of_server' => $lastServerKnowledge,
+        ]);
 
         $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
 
         if ($serverKnowledge) {
-            cookie('ynab_server_knowledge', $serverKnowledge);
+            $this->lastServerKnowledge = $serverKnowledge;
         }
 
         $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
@@ -54,6 +64,8 @@ class ExportController extends Controller
      */
     private function getAccounts(Request $request, string $budgetId = 'default')
     {
+        $lastServerKnowledge = $this->retrieveLastServerKnowledge($request);
+
         $accessToken = $request->cookie('ynab_access_token');
 
         if ($accessToken) {
@@ -62,12 +74,14 @@ class ExportController extends Controller
             throw new Exception('No access token');
         }
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts", [
+            'last_knowledge_of_server' => $lastServerKnowledge,
+        ]);
 
         $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
 
         if ($serverKnowledge) {
-            cookie('ynab_server_knowledge', $serverKnowledge);
+            $this->lastServerKnowledge = $serverKnowledge;
         }
 
         $accounts = data_get($response->json(), 'data.accounts', collect());
@@ -87,6 +101,8 @@ class ExportController extends Controller
      */
     private function getPayees(Request $request, string $budgetId = 'default')
     {
+        $serverKnowledge = $this->retrieveLastServerKnowledge($request);
+
         $accessToken = $request->cookie('ynab_access_token');
 
         if ($accessToken) {
@@ -95,12 +111,14 @@ class ExportController extends Controller
             throw new Exception('No access token');
         }
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees", [
+            'last_knowledge_of_server' => $serverKnowledge,
+        ]);
 
         $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
 
         if ($serverKnowledge) {
-            cookie('ynab_server_knowledge', $serverKnowledge);
+            $this->lastServerKnowledge = $serverKnowledge;
         }
 
         $payees = data_get($response->json(), 'data.payees', collect());
@@ -120,6 +138,8 @@ class ExportController extends Controller
      */
     private function getCategories(Request $request, string $budgetId = 'default')
     {
+        $serverKnowledge = $this->retrieveLastServerKnowledge($request);
+
         $accessToken = $request->cookie('ynab_access_token');
 
         if ($accessToken) {
@@ -128,12 +148,14 @@ class ExportController extends Controller
             throw new Exception('No access token');
         }
 
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
+        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories", [
+            'last_knowledge_of_server' => $serverKnowledge,
+        ]);
 
         $serverKnowledge = data_get($response->json(), 'data.server_knowledge');
 
         if ($serverKnowledge) {
-            cookie('ynab_server_knowledge', $serverKnowledge);
+            $this->lastServerKnowledge = $serverKnowledge;
         }
 
         $categories = data_get($response->json(), 'data.category_groups', collect());
@@ -224,11 +246,28 @@ class ExportController extends Controller
 
         $fileName = $this->buildFileName($request);
 
+        $request->session()->put('ynab_server_knowledge', $this->lastServerKnowledge);
+
         return (new RepeatingTransactionExport(
             scheduledTransactions: $scheduledTransactions,
             accounts: $accounts,
             payees: $payees,
             categories: $categories,
         ))->download($fileName, $writerType);
+    }
+
+    /**
+     * @param Request $request
+     * @return array|string|null
+     */
+    private function retrieveLastServerKnowledge(Request $request): string|array|null
+    {
+        $onlyRetrieveChangedRecords = $request->input('only_retrieve_changed_records', null);
+
+        if (!$onlyRetrieveChangedRecords) {
+            return null;
+        }
+
+        return $request->session()->get('ynab_server_knowledge');
     }
 }
