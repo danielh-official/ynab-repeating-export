@@ -2,16 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     /**
-     * Handle the incoming request.
+     * @param Request $request
+     * @return mixed
+     * @throws Exception
+     */
+    private function retrieveAccessToken(Request $request): mixed
+    {
+        $accessToken = $request->session()->get('ynab_access_token');
+
+        if (!$accessToken) {
+            throw new Exception('No access token');
+        }
+
+        return $accessToken;
+    }
+
+    /**
+     * @param Request $request
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function __invoke(Request $request)
     {
-        $accessToken = $request->cookie('ynab_access_token');
+        try {
+            $accessToken = $this->retrieveAccessToken($request);
+        } catch (Exception) {
+            $accessToken = null;
+        }
 
         $clientId = config('ynab.client.id');
         $redirectUri = config('ynab.redirect_uri');
