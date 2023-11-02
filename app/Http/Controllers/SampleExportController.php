@@ -146,6 +146,7 @@ class SampleExportController extends ExportController
 
     /**
      * Handle the incoming request.
+     * @todo Implement this method.
      */
     public function __invoke(Request $request): Response|BinaryFileResponse|RedirectResponse
     {
@@ -169,11 +170,11 @@ class SampleExportController extends ExportController
 
         $categories = $this->getCategories($request);
 
-        return (new RepeatingTransactionExport(
-            scheduledTransactions: $scheduledTransactions,
-            accounts: $accounts,
-            payees: $payees,
-            categories: $categories,
-        ))->download($fileName, $writerType);
+//        return (new RepeatingTransactionExport(
+//            scheduledTransactions: $scheduledTransactions,
+//            accounts: $accounts,
+//            payees: $payees,
+//            categories: $categories,
+//        ))->download($fileName, $writerType);
     }
 }

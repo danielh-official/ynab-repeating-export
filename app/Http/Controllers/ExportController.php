@@ -26,9 +26,14 @@ class ExportController extends BaseExportController
 {
     /**
      * @param YnabAccessTokenService $ynabAccessTokenService
+     * @param YnabScheduledTransactionTransformer $ynabScheduledTransactionTransformer
+     * @param YnabAccountTransformer $ynabAccountTransformer
+     * @param YnabCategoryTransformer $ynabCategoryTransformer
+     * @param YnabPayeeTransformer $ynabPayeeTransformer
+     * @param YnabLastKnowledgeOfServerService $ynabLastKnowledgeOfServerService
      */
     public function __construct(
-        private readonly YnabAccessTokenService              $ynabAccessTokenService,
+        protected readonly YnabAccessTokenService            $ynabAccessTokenService,
         private readonly YnabScheduledTransactionTransformer $ynabScheduledTransactionTransformer,
         private readonly YnabAccountTransformer              $ynabAccountTransformer,
         private readonly YnabCategoryTransformer             $ynabCategoryTransformer,
@@ -36,6 +41,9 @@ class ExportController extends BaseExportController
         private readonly YnabLastKnowledgeOfServerService    $ynabLastKnowledgeOfServerService,
     )
     {
+        parent::__construct(
+            ynabAccessTokenService: $ynabAccessTokenService,
+        );
     }
 
     /**
@@ -44,7 +52,7 @@ class ExportController extends BaseExportController
      * @return void
      * @throws Exception
      */
-    private function getScheduledTransactions(Request $request, string $budgetId = 'default')
+    protected function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
@@ -75,7 +83,7 @@ class ExportController extends BaseExportController
      * @return void
      * @throws Exception
      */
-    private function getAccounts(Request $request, string $budgetId = 'default')
+    protected function getAccounts(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
@@ -106,7 +114,7 @@ class ExportController extends BaseExportController
      * @return void
      * @throws Exception
      */
-    private function getPayees(Request $request, string $budgetId = 'default')
+    protected function getPayees(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
@@ -137,7 +145,7 @@ class ExportController extends BaseExportController
      * @return void
      * @throws Exception
      */
-    private function getCategories(Request $request, string $budgetId = 'default')
+    protected function getCategories(Request $request, string $budgetId = 'default')
     {
         $accessToken = $this->retrieveAccessToken($request);
 
@@ -162,44 +170,6 @@ class ExportController extends BaseExportController
         foreach ($categories as $category) {
             $this->ynabCategoryTransformer->store($category);
         }
-    }
-
-    private function buildFileName(Request $request)
-    {
-        $fileExtension = $request->input('file_extension', 'csv');
-
-        $todaysDateFileFriendlyName = now()->format('Y-m-d');
-
-        if ($fileExtension === 'csv') {
-            $fileStringExtension = 'csv';
-        } else if ($fileExtension === 'excel') {
-            $fileStringExtension = 'xlsx';
-        } else {
-            $fileStringExtension = 'csv';
-        }
-
-        return "$todaysDateFileFriendlyName-ynab-repeating-transactions.$fileStringExtension";
-    }
-
-    private function flattenCategories(Collection|array $categories): Collection
-    {
-        $flattenedCategories = collect();
-
-        if (is_array($categories)) {
-            $categories = collect($categories);
-        }
-
-        foreach ($categories as $categoryGroup) {
-            $flattenedCategories->push($categoryGroup);
-
-            $categories = data_get($categoryGroup, 'categories');
-
-            if ($categories) {
-                $flattenedCategories = $flattenedCategories->merge($this->flattenCategories($categories));
-            }
-        }
-
-        return $flattenedCategories;
     }
 
     /**
