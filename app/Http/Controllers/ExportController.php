@@ -20,16 +20,6 @@ class ExportController extends BaseExportController
      */
     public function __invoke(Request $request): Response|BinaryFileResponse|RedirectResponse
     {
-        $fileExtension = $request->input('file_extension', 'csv');
-
-        if ($fileExtension === 'csv') {
-            $writerType = Excel::CSV;
-        } else if ($fileExtension === 'excel') {
-            $writerType = Excel::XLSX;
-        } else {
-            $writerType = Excel::CSV;
-        }
-
         try {
             $scheduledTransactions = $this->getScheduledTransactions($request);
         } catch (Exception $e) {
@@ -85,6 +75,6 @@ class ExportController extends BaseExportController
             accounts: $accounts,
             payees: $payees,
             categories: $categories,
-        ))->download($fileName, $writerType);
+        ))->download($fileName);
     }
 }
