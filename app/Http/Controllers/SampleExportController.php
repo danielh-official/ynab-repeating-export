@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class SampleExportController extends ExportController
+class SampleExportController extends BaseExportController
 {
     protected Generator $faker;
 
