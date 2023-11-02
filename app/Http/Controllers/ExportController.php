@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class ExportController extends Controller
+class ExportController extends BaseExportController
 {
     /**
      * @param YnabAccessTokenService $ynabAccessTokenService
