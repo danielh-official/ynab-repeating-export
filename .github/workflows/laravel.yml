@@ -36,36 +36,36 @@ jobs:
       run: vendor/bin/pest
 
 
-  build:
+  # build:
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: '12'
-          check-latest: true
-      - name: Compile assets for production
-        run: |
-          npm install
-          npm run build
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v2-beta
+  #       with:
+  #         node-version: '12'
+  #         check-latest: true
+  #     - name: Compile assets for production
+  #       run: |
+  #         npm install
+  #         npm run build
 
-  deploy:
-    runs-on: ubuntu-latest
+  # deploy:
+  #   runs-on: ubuntu-latest
   
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Deployment
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          username: ${{ secrets.SSH_USERNAME }}
-          script: |
-            cd /var/www/html/
-            git checkout -f 
-            git pull origin main
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Deployment
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         username: ${{ secrets.SSH_USERNAME }}
+  #         script: |
+  #           cd /var/www/html/
+  #           git checkout -f 
+  #           git pull origin main
