@@ -9,14 +9,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "fakerphp/faker": "^1.9.1",
         "guzzlehttp/guzzle": "^7.2",
+        "laravel/forge-cli": "^1.8",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
         "laravel/vapor-cli": "^1.60",
         "laravel/vapor-core": "^2.32",
-        "maatwebsite/excel": "^3.1",
-        "fakerphp/faker": "^1.9.1"
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
