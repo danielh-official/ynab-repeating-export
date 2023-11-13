@@ -32,7 +32,7 @@
            href="{{ $auth_url }}">Authenticate YNAB</a>
     @endif
 
-    <div class="mt-8 flex flex-col space-y-2 text-center">
+    <div class="mt-8 flex flex-col space-y-2 text-center justify-center">
         <div>
             <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('privacy') }}">Privacy
                 Policy</a>
@@ -41,6 +41,15 @@
             <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                href="{{ route('guide') }}">Guide</a>
         </div>
+
+        @if(config('meta.links.github'))
+            <div>
+                <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                   href="{{ config('meta.links.github') }}">
+                    GitHub
+                </a>
+            </div>
+        @endif
 
         <hr class="border-gray-300 dark:border-gray-700">
 
