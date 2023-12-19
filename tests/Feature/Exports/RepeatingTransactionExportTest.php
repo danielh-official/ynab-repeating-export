@@ -74,6 +74,8 @@ test('get collection', function () {
             'amount_per_week' => 0.25,
             'amount_per_month' => 1.0,
             'amount_per_year' => 12.0,
+            'parent_memo' => null,
+            'parent_payee_name' => null,
         ],
     ];
 
