@@ -85,6 +85,9 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             $categoryName = data_get($transaction, 'category.name');
             $categoryGroupName = data_get($transaction, 'category.category_group_name');
 
+            $parentMemo = data_get($transaction, 'parent_memo');
+            $parentPayeeName = data_get($transaction, 'parent_payee.name');
+
             $data->push([
                 'date_first' => $dateFirst->format('Y-m-d'),
                 'date_next' => $dateNext->format('Y-m-d'),
@@ -92,10 +95,12 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
                 'raw_amount' => $amount,
                 'amount' => abs($amount),
                 'inflow_outflow' => $amount < 0 ? 'outflow' : 'inflow',
+                'parent_memo' => $parentMemo,
                 'memo' => $memo,
                 'flag_color' => $flagColor,
                 'account_name' => $accountName,
                 'payee_name' => $payeeName,
+                'parent_payee_name' => $parentPayeeName,
                 'category_name' => $categoryName,
                 'category_group_name' => $categoryGroupName,
                 'transfer_account_name' => $transferAccountName,
@@ -132,10 +137,12 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             'Raw Amount',
             'Amount',
             'Inflow/Outflow',
+            'Parent Memo',
             'Memo',
             'Flag Color',
             'Account Name',
             'Payee Name',
+            'Parent Payee Name',
             'Category Name',
             'Category Group Name',
             'Transfer Account Name',
