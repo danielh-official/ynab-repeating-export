@@ -26,3 +26,15 @@ test('4 per every other week to month equals 8.0', function () {
     expect($result)->toBe(8.0);
 });
 
+test('12 per every 3 months to month equals 4.0', function () {
+    $result = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(12, YnabAcceptedFrequency::every3Months, YnabAcceptedFrequency::monthly);
+
+    expect($result)->toBe(4.0);
+});
+
+test('12 per every 4 months to month equals 3.0', function () {
+    $result = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(12, YnabAcceptedFrequency::every4Months, YnabAcceptedFrequency::monthly);
+
+    expect($result)->toBe(3.0);
+});
+

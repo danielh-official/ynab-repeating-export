@@ -15,6 +15,7 @@ enum YnabAcceptedFrequency: string
     case every4Months = 'every4Months';
     case twiceAYear = 'twiceAYear';
     case yearly = 'yearly';
+    case everyOtherYear = 'everyOtherYear';
 
     /**
      * @param float|int $amount
@@ -85,7 +86,27 @@ enum YnabAcceptedFrequency: string
                 self::yearly => $amount * 4,
                 default => $amount,
             },
-            default => $amount,
+            self::every4Months => match ($toFrequency) {
+                self::daily => $amount / 120,
+                self::weekly => $amount / 16,
+                self::monthly => $amount / 4,
+                self::yearly => $amount * 3,
+                default => $amount,
+            },
+            self::twiceAYear => match ($toFrequency) {
+                self::daily => $amount / 180,
+                self::weekly => $amount / 24,
+                self::monthly => $amount / 6,
+                self::yearly => $amount / 2,
+                default => $amount,
+            },
+            self::everyOtherYear => match ($toFrequency) {
+                self::daily => $amount / 730,
+                self::weekly => $amount / 104,
+                self::monthly => $amount / 24,
+                self::yearly => $amount / 2,
+                default => $amount,
+            },
         };
 
         return round($amount, $decimalPoints);
