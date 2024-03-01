@@ -3,14 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RepeatingTransactionExport;
-use App\Services\YnabAccessTokenService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
-use Maatwebsite\Excel\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends BaseExportController
