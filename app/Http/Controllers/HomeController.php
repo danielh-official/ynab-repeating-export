@@ -11,18 +11,12 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    /**
-     * @param YnabAccessTokenService $ynabAccessTokenService
-     */
     public function __construct(
         private readonly YnabAccessTokenService $ynabAccessTokenService,
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Request $request
-     * @return mixed
      * @throws Exception
      */
     private function retrieveAccessToken(Request $request): mixed
@@ -31,7 +25,6 @@ class HomeController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function __invoke(Request $request)
@@ -42,10 +35,13 @@ class HomeController extends Controller
             $accessToken = null;
         }
 
-        $clientId = config('ynab.client.id');
-        $redirectUri = config('ynab.redirect_uri');
+        $query = http_build_query([
+            'client_id' => config('ynab.client.id'),
+            'redirect_uri' => config('ynab.redirect_uri'),
+            'response_type' => 'code',
+        ]);
 
-        $authUrl = "https://app.ynab.com/oauth/authorize?client_id=$clientId&redirect_uri=$redirectUri&response_type=code";
+        $authUrl = "https://app.ynab.com/oauth/authorize?$query";
 
         return view('welcome', [
             'access_token' => $accessToken,
