@@ -17,15 +17,12 @@ enum YnabAcceptedFrequency: string
     case yearly = 'yearly';
     case everyOtherYear = 'everyOtherYear';
 
-    /**
-     * @param float|int $amount
-     * @param YnabAcceptedFrequency $fromFrequency
-     * @param YnabAcceptedFrequency $toFrequency
-     * @param int $decimalPoints
-     * @return float
-     */
-    public static function convertAmountFromFrequencyToFrequency(float|int $amount, self $fromFrequency, self $toFrequency, int $decimalPoints = 2): float
-    {
+    public static function convertAmountFromFrequencyToFrequency(
+        float|int $amount,
+        self $fromFrequency,
+        self $toFrequency,
+        int $decimalPoints = 2
+    ): float {
         $amount = match ($fromFrequency) {
             self::daily => match ($toFrequency) {
                 self::weekly => $amount * 7,

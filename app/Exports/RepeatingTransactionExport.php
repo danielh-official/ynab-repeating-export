@@ -23,18 +23,12 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         private readonly Collection $accounts,
         private readonly Collection $payees,
         private readonly Collection $categories,
-    )
-    {
-        $scheduledTransactions = new \Illuminate\Database\Eloquent\Collection($scheduledTransactions);
-        $accounts = new \Illuminate\Database\Eloquent\Collection($accounts);
-        $payees = new \Illuminate\Database\Eloquent\Collection($payees);
-        $categories = new \Illuminate\Database\Eloquent\Collection($categories);
-
+    ) {
         $this->ynabScheduledTransactionService = new YnabScheduledTransactionService(
-            $scheduledTransactions,
-            $accounts,
-            $payees,
-            $categories,
+            new \Illuminate\Database\Eloquent\Collection($scheduledTransactions),
+            new \Illuminate\Database\Eloquent\Collection($accounts),
+            new \Illuminate\Database\Eloquent\Collection($payees),
+            new \Illuminate\Database\Eloquent\Collection($categories),
         );
 
         $this->mergeLiveData();
@@ -50,63 +44,56 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         $data = collect();
 
         foreach ($this->data as $transaction) {
-            $isDeleted = data_get($transaction, 'deleted');
-
-            if ($isDeleted) {
+            if (data_get($transaction, 'deleted')) {
                 continue;
             }
 
-            $frequency = data_get($transaction, 'frequency');
+            $frequency = YnabAcceptedFrequency::tryFrom(data_get($transaction, 'frequency'));
 
-            $frequency = YnabAcceptedFrequency::tryFrom($frequency);
-
-            $notValidFrequency = empty($frequency);
-
-            if ($notValidFrequency) {
+            if (empty($frequency)) {
                 continue;
             }
 
-            $dateFirst = data_get($transaction, 'date_first');
-            $dateFirst = Carbon::parse($dateFirst);
-
-            $dateNext = data_get($transaction, 'date_next');
-            $dateNext = Carbon::parse($dateNext);
             $amount = data_get($transaction, 'amount');
 
             if ($amount) {
                 $amount = $amount / 1000;
             }
 
-            $memo = data_get($transaction, 'memo');
-            $flagColor = data_get($transaction, 'flag_color');
-            $accountName = data_get($transaction, 'account.name');
-            $transferAccountName = data_get($transaction, 'transfer_account.name');
-            $payeeName = data_get($transaction, 'payee.name');
-            $categoryName = data_get($transaction, 'category.name');
-            $categoryGroupName = data_get($transaction, 'category.category_group_name');
-
-            $parentMemo = data_get($transaction, 'parent_memo');
-            $parentPayeeName = data_get($transaction, 'parent_payee.name');
-
             $data->push([
-                'date_first' => $dateFirst->format('Y-m-d'),
-                'date_next' => $dateNext->format('Y-m-d'),
+                'date_first' => Carbon::parse(data_get($transaction, 'date_first'))->format('Y-m-d'),
+                'date_next' => Carbon::parse(data_get($transaction, 'date_next'))->format('Y-m-d'),
                 'frequency' => $frequency->value,
                 'raw_amount' => $amount,
                 'amount' => abs($amount),
                 'inflow_outflow' => $amount < 0 ? 'outflow' : 'inflow',
-                'parent_memo' => $parentMemo,
-                'memo' => $memo,
-                'flag_color' => $flagColor,
-                'account_name' => $accountName,
-                'payee_name' => $payeeName,
-                'parent_payee_name' => $parentPayeeName,
-                'category_name' => $categoryName,
-                'category_group_name' => $categoryGroupName,
-                'transfer_account_name' => $transferAccountName,
-                'raw_amount_per_week' => $amountPerWeek = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::weekly),
-                'raw_amount_per_month' => $amountPerMonth = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::monthly),
-                'raw_amount_per_year' => $amountPerYear = YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency($amount, $frequency, YnabAcceptedFrequency::yearly),
+                'parent_memo' => data_get($transaction, 'parent_memo'),
+                'memo' => data_get($transaction, 'memo'),
+                'flag_color' => data_get($transaction, 'flag_color'),
+                'account_name' => data_get($transaction, 'account.name'),
+                'payee_name' => data_get($transaction, 'payee.name'),
+                'parent_payee_name' => data_get($transaction, 'parent_payee.name'),
+                'category_name' => data_get($transaction, 'category.name'),
+                'category_group_name' => data_get($transaction, 'category.category_group_name'),
+                'transfer_account_name' => data_get($transaction, 'transfer_account.name'),
+                'raw_amount_per_week' => $amountPerWeek =
+                    YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                        $amount,
+                        $frequency,
+                        YnabAcceptedFrequency::weekly
+                    ),
+                'raw_amount_per_month' => $amountPerMonth =
+                    YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                        $amount,
+                        $frequency,
+                        YnabAcceptedFrequency::monthly
+                    ),
+                'raw_amount_per_year' => $amountPerYear =
+                    YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                        $amount,
+                        $frequency,
+                        YnabAcceptedFrequency::yearly
+                    ),
                 'amount_per_week' => abs($amountPerWeek),
                 'amount_per_month' => abs($amountPerMonth),
                 'amount_per_year' => abs($amountPerYear),
@@ -116,9 +103,6 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         return $data;
     }
 
-    /**
-     * @return Collection
-     */
     public function collection(): Collection
     {
         return $this->parseLiveData();
@@ -126,6 +110,7 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 
     /**
      * @return string[]
+     *
      * @codeCoverageIgnore
      */
     public function headings(): array
