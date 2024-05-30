@@ -10,26 +10,21 @@ use Illuminate\Support\Facades\Http;
 
 class BaseExportController extends Controller
 {
-    /**
-     * @param YnabAccessTokenService $ynabAccessTokenService
-     */
     public function __construct(
         protected readonly YnabAccessTokenService $ynabAccessTokenService,
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Request $request
-     * @param string $budgetId
      * @return array|Collection|mixed
+     *
      * @throws Exception
      */
     protected function getScheduledTransactions(Request $request, string $budgetId = 'default')
     {
-        $accessToken = $this->retrieveAccessToken($request);
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
+        $response = Http::withToken(
+            $this->retrieveAccessToken($request)
+        )->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions");
 
         if ($response->failed()) {
             throw new Exception('Failed to get scheduled transactions', $response->status());
@@ -37,7 +32,7 @@ class BaseExportController extends Controller
 
         $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
 
-        if (!$scheduledTransactions instanceof Collection) {
+        if (! $scheduledTransactions instanceof Collection) {
             $scheduledTransactions = collect($scheduledTransactions);
         }
 
@@ -45,16 +40,15 @@ class BaseExportController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param string $budgetId
      * @return array|Collection|mixed
+     *
      * @throws Exception
      */
     protected function getAccounts(Request $request, string $budgetId = 'default')
     {
-        $accessToken = $this->retrieveAccessToken($request);
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
+        $response = Http::withToken(
+            $this->retrieveAccessToken($request)
+        )->get("https://api.ynab.com/v1/budgets/$budgetId/accounts");
 
         if ($response->failed()) {
             throw new Exception('Failed to get accounts', $response->status());
@@ -62,7 +56,7 @@ class BaseExportController extends Controller
 
         $accounts = data_get($response->json(), 'data.accounts', collect());
 
-        if (!$accounts instanceof Collection) {
+        if (! $accounts instanceof Collection) {
             $accounts = collect($accounts);
         }
 
@@ -70,16 +64,15 @@ class BaseExportController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param string $budgetId
      * @return array|Collection|mixed
+     *
      * @throws Exception
      */
     protected function getPayees(Request $request, string $budgetId = 'default')
     {
-        $accessToken = $this->retrieveAccessToken($request);
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
+        $response = Http::withToken(
+            $this->retrieveAccessToken($request)
+        )->get("https://api.ynab.com/v1/budgets/$budgetId/payees");
 
         if ($response->failed()) {
             throw new Exception('Failed to get payees', $response->status());
@@ -87,7 +80,7 @@ class BaseExportController extends Controller
 
         $payees = data_get($response->json(), 'data.payees', collect());
 
-        if (!$payees instanceof Collection) {
+        if (! $payees instanceof Collection) {
             $payees = collect($payees);
         }
 
@@ -95,16 +88,15 @@ class BaseExportController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param string $budgetId
      * @return Collection
+     *
      * @throws Exception
      */
     protected function getCategories(Request $request, string $budgetId = 'default')
     {
-        $accessToken = $this->retrieveAccessToken($request);
-
-        $response = Http::withToken($accessToken)->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
+        $response = Http::withToken(
+            $this->retrieveAccessToken($request)
+        )->get("https://api.ynab.com/v1/budgets/$budgetId/categories");
 
         if ($response->failed()) {
             throw new Exception('Failed to get categories', $response->status());
@@ -112,7 +104,7 @@ class BaseExportController extends Controller
 
         $categories = data_get($response->json(), 'data.category_groups', collect());
 
-        if (!$categories instanceof Collection) {
+        if (! $categories instanceof Collection) {
             $categories = collect($categories);
         }
 
@@ -123,17 +115,17 @@ class BaseExportController extends Controller
     {
         $fileExtension = $request->input('file_extension', 'csv');
 
-        $todaysDateFileFriendlyName = now()->format('Y-m-d');
-
         if ($fileExtension === 'csv') {
             $fileStringExtension = 'csv';
-        } else if ($fileExtension === 'excel') {
+        } elseif ($fileExtension === 'excel') {
             $fileStringExtension = 'xlsx';
         } else {
             $fileStringExtension = 'csv';
         }
 
-        return "$todaysDateFileFriendlyName-ynab-repeating-transactions.$fileStringExtension";
+        $today = now()->format('Y-m-d');
+
+        return "$today-ynab-repeating-transactions.$fileStringExtension";
     }
 
     private function flattenCategories(Collection|array $categories): Collection
@@ -158,8 +150,6 @@ class BaseExportController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return mixed
      * @throws Exception
      */
     private function retrieveAccessToken(Request $request): mixed

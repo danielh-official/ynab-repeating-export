@@ -8,28 +8,26 @@ use Illuminate\Support\Facades\Http;
 
 class YnabController extends Controller
 {
-    /**
-     * @param YnabAccessTokenService $ynabAccessTokenService
-     */
     public function __construct(
         private readonly YnabAccessTokenService $ynabAccessTokenService,
-    )
-    {
+    ) {
     }
 
     public function callback(Request $request)
     {
-        $code = $request->query('code');
+        $query = http_build_query([
+            'client_id' => config('ynab.client.id'),
+            'client_secret' => config('ynab.client.secret'),
+            'redirect_uri' => config('ynab.redirect_uri'),
+            'grant_type' => 'authorization_code',
+            'code' => $request->query('code'),
+            'scope' => 'read-only',
+        ]);
 
-        $clientId = config('ynab.client.id');
-        $clientSecret = config('ynab.client.secret');
-        $redirectUri = config('ynab.redirect_uri');
-
-        $accessTokenUrl = "https://app.ynab.com/oauth/token?client_id=$clientId&client_secret=$clientSecret&redirect_uri=$redirectUri&grant_type=authorization_code&code=$code&scope=read-only";
-
-        $response = Http::post($accessTokenUrl);
-
-        $accessToken = data_get($response->json(), 'access_token');
+        $accessToken = data_get(
+            Http::post("https://app.ynab.com/oauth/token?$query")->json(),
+            'access_token'
+        );
 
         if ($accessToken) {
             $this->ynabAccessTokenService->store($request, $accessToken);
