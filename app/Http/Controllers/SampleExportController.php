@@ -46,7 +46,7 @@ class SampleExportController extends BaseExportController
                 'date_first' => $dateFirst->format('Y-m-d'),
                 'date_next' => $dateFirst->addDays($daysAfterDateFirst)->format('Y-m-d'),
                 'frequency' => $randomFrequency->value,
-                'amount' => $this->faker->boolean
+                'amount' => $this->faker->boolean()
                     ? $this->faker->randomFloat(2, 1000, 10000000)
                     : $this->faker->randomFloat(2, -10000000, -1000),
                 'memo' => $this->faker->sentence(),
