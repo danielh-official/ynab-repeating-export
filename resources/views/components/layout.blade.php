@@ -14,6 +14,12 @@
 
     <!-- Styles -->
     @vite(['resources/css/app.css','resources/js/app.js'])
+
+    <!-- Scripts -->
+    <script
+        src="https://js.sentry-cdn.com/4524f8afb34bedae73fb214b0e9a09e7.min.js"
+        crossorigin="anonymous"
+    ></script>
 </head>
 <body class="antialiased">
 <div
