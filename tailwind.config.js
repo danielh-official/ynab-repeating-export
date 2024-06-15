@@ -11,8 +11,7 @@ export default {
         extend: {},
     },
     plugins: [
-        require('flowbite/plugin'),
+        require("flowbite/plugin"),
         require("tw-elements/dist/plugin.cjs"),
     ],
-}
-
+};
