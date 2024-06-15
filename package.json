@@ -19,4 +19,5 @@
     "flowbite": "^2.2.0",
     "tw-elements": "^1.1.0"
   }
+        "@sentry/browser": "^7.40.0",
 }
