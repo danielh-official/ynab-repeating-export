@@ -3,7 +3,7 @@
 use App\Exports\RepeatingTransactionExport;
 use Illuminate\Support\Collection;
 
-test('get collection', function () {
+it('gets a collection', function () {
     $result = resolve(RepeatingTransactionExport::class, [
         'scheduledTransactions' => collect([[
             'id' => 1,
@@ -69,10 +69,9 @@ test('get collection', function () {
                 'parent_payee_name' => null,
             ],
         ]);
-
 });
 
-test('get collection for transaction with every 3 months', function () {
+it('gets a collection for transaction with every 3 months', function () {
     $result = resolve(RepeatingTransactionExport::class, [
         'scheduledTransactions' => collect([[
             'id' => 1,
@@ -141,7 +140,7 @@ test('get collection for transaction with every 3 months', function () {
 
 });
 
-test('convert subtransactions into collection', function () {
+it('converts subtransactions into collection', function () {
     $result = resolve(RepeatingTransactionExport::class, [
         'scheduledTransactions' => collect([[
             'id' => 1,
@@ -263,4 +262,136 @@ test('convert subtransactions into collection', function () {
                 'parent_payee_name' => 'Test',
             ],
         ]);
+});
+
+it('ignores deleted items', function () {
+    $result = resolve(RepeatingTransactionExport::class, [
+        'scheduledTransactions' => collect([[
+            'id' => 1,
+            'account_id' => 1,
+            'payee_id' => 1,
+            'category_id' => 1,
+            'transfer_account_id' => null,
+            'deleted' => true,
+            'frequency' => 'monthly',
+            'date_first' => '2021-01-01',
+            'date_next' => '2021-01-01',
+            'amount' => -1000,
+            'memo' => 'Test',
+            'flag_color' => 'red',
+        ]]),
+        'categories' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'category_group_name' => 'Test Group',
+                'deleted' => false,
+            ],
+        ]),
+        'payees' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+        'accounts' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+    ])->collection();
+
+    expect($result)->toBeInstanceOf(Collection::class)
+        ->and($result->toArray())->toEqual([]);
+});
+
+it('ignores items without amounts', function () {
+    $result = resolve(RepeatingTransactionExport::class, [
+        'scheduledTransactions' => collect([[
+            'id' => 1,
+            'account_id' => 1,
+            'payee_id' => 1,
+            'category_id' => 1,
+            'transfer_account_id' => null,
+            'deleted' => false,
+            'frequency' => 'monthly',
+            'date_first' => '2021-01-01',
+            'date_next' => '2021-01-01',
+            'amount' => null,
+            'memo' => 'Test',
+            'flag_color' => 'red',
+        ]]),
+        'categories' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'category_group_name' => 'Test Group',
+                'deleted' => false,
+            ],
+        ]),
+        'payees' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+        'accounts' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+    ])->collection();
+
+    expect($result)->toBeInstanceOf(Collection::class)
+        ->and($result->toArray())->toEqual([]);
+});
+
+it('ignores items without frequencies', function () {
+    $result = resolve(RepeatingTransactionExport::class, [
+        'scheduledTransactions' => collect([[
+            'id' => 1,
+            'account_id' => 1,
+            'payee_id' => 1,
+            'category_id' => 1,
+            'transfer_account_id' => null,
+            'deleted' => false,
+            'frequency' => null,
+            'date_first' => '2021-01-01',
+            'date_next' => '2021-01-01',
+            'amount' => -1000,
+            'memo' => 'Test',
+            'flag_color' => 'red',
+        ]]),
+        'categories' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'category_group_name' => 'Test Group',
+                'deleted' => false,
+            ],
+        ]),
+        'payees' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+        'accounts' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+    ])->collection();
+
+    expect($result)->toBeInstanceOf(Collection::class)
+        ->and($result->toArray())->toEqual([]);
 });
