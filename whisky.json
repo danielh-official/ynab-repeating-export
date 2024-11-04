@@ -1,0 +1,14 @@
+{
+  "disabled": [],
+  "hooks": {
+    "pre-commit": [
+      "./vendor/bin/pint --dirty --repair",
+      "npx prettier . --write"
+    ],
+    "pre-push": [
+      "php artisan test --parallel --compact",
+      "./vendor/bin/pint --dirty --repair",
+      "npx prettier . --write"
+    ]
+  }
+}

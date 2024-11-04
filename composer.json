@@ -27,6 +27,7 @@
         "nunomaduro/collision": "^8.1",
         "pestphp/pest": "^2.23",
         "pestphp/pest-plugin-laravel": "^2.2",
+        "projektgopher/whisky": "^0.7.0",
         "spatie/laravel-ignition": "^2.4"
     },
     "autoload": {
