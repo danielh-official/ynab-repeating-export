@@ -1,3 +1,0 @@
-php artisan test
-./vendor/bin/pint --dirty --repair
-npx prettier . --write
