@@ -6,6 +6,9 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
+/**
+ * @codeCoverageIgnore
+ */
 class SampleExport extends Component
 {
     /**

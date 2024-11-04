@@ -28,15 +28,10 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
+     *
+     * @codeCoverageIgnore
      */
     public function boot(): void
-    {
-        //
-
-        $this->bootRoute();
-    }
-
-    public function bootRoute(): void
     {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
