@@ -9,26 +9,26 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "fakerphp/faker": "^1.23",
-        "guzzlehttp/guzzle": "^7.2",
-        "laravel/forge-cli": "^1.8",
-        "laravel/framework": "^11.9",
-        "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
-        "laravel/vapor-cli": "^1.63",
-        "laravel/vapor-core": "^2.36",
-        "maatwebsite/excel": "^3.1",
-        "sentry/sentry-laravel": "*"
+        "fakerphp/faker": "^1.23.1",
+        "guzzlehttp/guzzle": "^7.9.2",
+        "laravel/forge-cli": "^1.8.3",
+        "laravel/framework": "^11.30",
+        "laravel/sanctum": "^4.0.3",
+        "laravel/tinker": "^2.10",
+        "laravel/vapor-cli": "^1.65.1",
+        "laravel/vapor-core": "^2.37.1",
+        "maatwebsite/excel": "^3.1.58",
+        "sentry/sentry-laravel": ">=4.9"
     },
     "require-dev": {
-        "laravel/pint": "^1.16",
-        "laravel/sail": "^1.26",
-        "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.1",
-        "pestphp/pest": "^2.23",
-        "pestphp/pest-plugin-laravel": "^2.2",
+        "laravel/pint": "^1.18.1",
+        "laravel/sail": "^1.37.1",
+        "mockery/mockery": "^1.6.12",
+        "nunomaduro/collision": "^8.5",
+        "pestphp/pest": "^2.36",
+        "pestphp/pest-plugin-laravel": "^2.4",
         "projektgopher/whisky": "^0.7.0",
-        "spatie/laravel-ignition": "^2.4"
+        "spatie/laravel-ignition": "^2.8"
     },
     "autoload": {
         "psr-4": {
