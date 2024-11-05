@@ -12,6 +12,9 @@ on:
       TRIGGER_URL:
         required: true
 
+env:
+  TRIGGER_URL: ${{ secrets.TRIGGER_URL }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
