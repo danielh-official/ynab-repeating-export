@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: false
+    secrets:
+      TRIGGER_URL:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        run: |
+          if [ -n "${{ inputs.branch }}" ]; then
+            if [ "${{ inputs.branch }}" != "main" ] && [ "${{ inputs.branch }}" != "development" ]; then
+              TRIGGER_URL="${TRIGGER_URL}&branch=${{ inputs.branch }}"
+            fi
+          fi
+
+          curl -X GET "${TRIGGER_URL}"
+        shell: bash
+        env:
+          TRIGGER_URL: ${{ secrets.TRIGGER_URL }}
