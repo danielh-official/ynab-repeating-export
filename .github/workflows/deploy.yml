@@ -17,6 +17,8 @@ env:
 
 jobs:
   deploy:
+    environment: ynab-repeating-export
+
     runs-on: ubuntu-latest
 
     steps:
