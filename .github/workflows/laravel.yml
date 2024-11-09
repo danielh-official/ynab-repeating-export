@@ -30,6 +30,8 @@ jobs:
       run: |
         mkdir -p database
         touch database/database.sqlite
+    - name: Build
+      run: npm run build
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
         DB_CONNECTION: sqlite
