@@ -17,20 +17,12 @@ class HomeController extends Controller
     }
 
     /**
-     * @throws Exception
-     */
-    private function retrieveAccessToken(Request $request): mixed
-    {
-        return $this->ynabAccessTokenService->get($request);
-    }
-
-    /**
      * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function __invoke(Request $request)
     {
         try {
-            $accessToken = $this->retrieveAccessToken($request);
+            $accessToken = $this->ynabAccessTokenService->get($request);
         } catch (Exception) {
             $accessToken = null;
         }
