@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\BuildFileName;
 use App\Actions\Sample\GetSampleAccounts;
-use App\Actions\Sample\GetSampleCategories;
+use App\Actions\Sample\GetSampleCategoryGroups;
 use App\Actions\Sample\GetSamplePayees;
 use App\Actions\Sample\GetSampleScheduledTransactions;
 use App\Exports\RepeatingTransactionExport;
@@ -23,7 +23,7 @@ class SampleExportController extends Controller
         protected GetSampleScheduledTransactions $getSampleScheduledTransactions,
         protected GetSampleAccounts $getSampleAccounts,
         protected GetSamplePayees $getSamplePayees,
-        protected GetSampleCategories $getSampleCategories,
+        protected GetSampleCategoryGroups $getSampleCategoryGroups,
         protected BuildFileName $buildFileName,
     ) {
         $this->faker = Factory::create();
@@ -35,7 +35,7 @@ class SampleExportController extends Controller
             scheduledTransactions: $this->getSampleScheduledTransactions->handle(),
             accounts: $this->getSampleAccounts->handle(),
             payees: $this->getSamplePayees->handle(),
-            categories: $this->getSampleCategories->handle(),
+            categories: $this->getSampleCategoryGroups->handle(),
         ))->download($this->buildFileName->handle($request));
     }
 }

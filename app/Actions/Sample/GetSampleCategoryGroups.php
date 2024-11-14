@@ -7,7 +7,7 @@ namespace App\Actions\Sample;
 use App\Models\Category;
 use App\Models\CategoryGroup;
 
-class GetSampleCategories
+class GetSampleCategoryGroups
 {
     public function handle()
     {
