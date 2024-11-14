@@ -132,25 +132,25 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         }
 
         $amountPerWeek =
-                YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
-                    $amount,
-                    $frequency,
-                    YnabAcceptedFrequency::weekly
-                );
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::weekly
+            );
 
         $amountPerMonth =
-        YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
-            $amount,
-            $frequency,
-            YnabAcceptedFrequency::monthly
-        );
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::monthly
+            );
 
         $amountPerYear =
-        YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
-            $amount,
-            $frequency,
-            YnabAcceptedFrequency::yearly
-        );
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::yearly
+            );
 
         $dateFirst = $parentTransaction ? data_get($parentTransaction, 'date_first') : data_get($transaction, 'date_first');
 
@@ -187,6 +187,6 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
 
     private function filterByNotDeleted(array $item): bool
     {
-        return ! $item['deleted'] ?? true;
+        return ! data_get($item, 'deleted') ?? true;
     }
 }
