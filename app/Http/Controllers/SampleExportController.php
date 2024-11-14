@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\BuildFileName;
 use App\Actions\Sample\GetSampleAccounts;
 use App\Actions\Sample\GetSampleCategories;
 use App\Actions\Sample\GetSamplePayees;
 use App\Actions\Sample\GetSampleScheduledTransactions;
 use App\Exports\RepeatingTransactionExport;
-use App\Services\YnabAccessTokenService;
 use Faker\Factory;
 use Faker\Generator;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +24,7 @@ class SampleExportController extends Controller
         protected GetSampleAccounts $getSampleAccounts,
         protected GetSamplePayees $getSamplePayees,
         protected GetSampleCategories $getSampleCategories,
+        protected BuildFileName $buildFileName,
     ) {
         $this->faker = Factory::create();
     }
@@ -35,6 +36,6 @@ class SampleExportController extends Controller
             accounts: $this->getSampleAccounts->handle(),
             payees: $this->getSamplePayees->handle(),
             categories: $this->getSampleCategories->handle(),
-        ))->download($this->buildFileName($request));
+        ))->download($this->buildFileName->handle($request));
     }
 }
