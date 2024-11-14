@@ -30,7 +30,7 @@ class YnabController extends Controller
         );
 
         if ($accessToken) {
-            $this->ynabAccessTokenService->store($request, $accessToken);
+            $this->ynabAccessTokenService->store($accessToken);
 
             return redirect()->route('home')->with('success', 'Access token retrieved');
         } else {

@@ -8,17 +8,17 @@ use App\Services\YnabAccessTokenService;
 use Illuminate\Http\Request;
 use Http;
 
-class GetCategories
+class GetCategoryGroups
 {
     public function __construct(
         protected readonly YnabAccessTokenService $ynabAccessTokenService,
     ) {
     }
 
-    public function handle(Request $request, string $budgetId = 'default')
+    public function handle(string $budgetId = 'default')
     {
         return Http::withToken(
-            $this->ynabAccessTokenService->get($request)
+            $this->ynabAccessTokenService->get()
         )->get("https://api.ynab.com/v1/budgets/$budgetId/categories")->throw();
     }
 }
