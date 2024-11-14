@@ -395,3 +395,47 @@ it('ignores items without frequencies', function () {
     expect($result)->toBeInstanceOf(Collection::class)
         ->and($result->toArray())->toEqual([]);
 });
+
+it('ignores items without accepted frequency', function () {
+    $result = resolve(RepeatingTransactionExport::class, [
+        'scheduledTransactions' => collect([[
+            'id' => 1,
+            'account_id' => 1,
+            'payee_id' => 1,
+            'category_id' => 1,
+            'transfer_account_id' => null,
+            'deleted' => false,
+            'frequency' => 'never',
+            'date_first' => '2021-01-01',
+            'date_next' => '2021-01-01',
+            'amount' => -1000,
+            'memo' => 'Test',
+            'flag_color' => 'red',
+        ]]),
+        'categories' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'category_group_name' => 'Test Group',
+                'deleted' => false,
+            ],
+        ]),
+        'payees' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+        'accounts' => collect([
+            [
+                'id' => '1',
+                'name' => 'Test',
+                'deleted' => false,
+            ],
+        ]),
+    ])->collection();
+
+    expect($result)->toBeInstanceOf(Collection::class)
+        ->and($result->toArray())->toEqual([]);
+});
