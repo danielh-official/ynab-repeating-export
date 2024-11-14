@@ -108,6 +108,10 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             return null;
         }
 
+        if ($frequency === null) {
+            return null;
+        }
+
         $account = $this->accounts->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($transaction, 'account_id'));
 
         if ($parentTransaction) {
