@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\BuildFileName;
 use App\Actions\FlattenCategories;
 use App\Actions\GetAccounts;
-use App\Actions\GetCategories;
+use App\Actions\GetCategoryGroups;
 use App\Actions\GetPayees;
 use App\Actions\GetScheduledTransactions;
 use App\Exports\RepeatingTransactionExport;
@@ -23,7 +23,7 @@ class ExportController extends Controller
         protected GetScheduledTransactions $getScheduledTransactions,
         protected GetAccounts $getAccounts,
         protected GetPayees $getPayees,
-        protected GetCategories $getCategories,
+        protected GetCategoryGroups $getCategoryGroups,
         protected FlattenCategories $flattenCategories,
         protected BuildFileName $buildFileName,
     ) {
@@ -33,7 +33,7 @@ class ExportController extends Controller
     public function __invoke(Request $request): Response|BinaryFileResponse|RedirectResponse
     {
         try {
-            $response = $this->getScheduledTransactions->handle($request);
+            $response = $this->getScheduledTransactions->handle();
 
             $scheduledTransactions = data_get($response->json(), 'data.scheduled_transactions', collect());
 
@@ -45,7 +45,7 @@ class ExportController extends Controller
         }
 
         try {
-            $response = $this->getAccounts->handle($request);
+            $response = $this->getAccounts->handle();
 
             $accounts = data_get($response->json(), 'data.accounts', collect());
 
@@ -57,7 +57,7 @@ class ExportController extends Controller
         }
 
         try {
-            $response = $this->getPayees->handle($request);
+            $response = $this->getPayees->handle();
 
             $payees = data_get($response->json(), 'data.payees', collect());
 
@@ -69,15 +69,15 @@ class ExportController extends Controller
         }
 
         try {
-            $response = $this->getCategories->handle($request);
+            $response = $this->getCategoryGroups->handle();
 
-            $categories = data_get($response->json(), 'data.category_groups', collect());
+            $categoryGroups = data_get($response->json(), 'data.category_groups', collect());
 
-            if (!$categories instanceof Collection) {
-                $categories = collect($categories);
+            if (!$categoryGroups instanceof Collection) {
+                $categoryGroups = collect($categoryGroups);
             }
 
-            $categories = $this->flattenCategories->handle($categories);
+            $categoryGroups = $this->flattenCategories->handle($categoryGroups);
         } catch (Exception $e) {
             return $this->handleError($e, $request, 'Failed to get categories.');
         }
@@ -88,14 +88,14 @@ class ExportController extends Controller
             scheduledTransactions: $scheduledTransactions,
             accounts: $accounts,
             payees: $payees,
-            categories: $categories,
+            categories: $categoryGroups,
         ))->download($fileName);
     }
 
     private function handleError(Exception $e, Request $request, string $customMessage)
     {
         if ($e->getCode() === 401) {
-            $this->ynabAccessTokenService->delete($request);
+            $this->ynabAccessTokenService->delete();
 
             return redirect()->route('home')->with('error', "$customMessage Please re-authenticate.");
         }

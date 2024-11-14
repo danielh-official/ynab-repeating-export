@@ -22,7 +22,7 @@ class HomeController extends Controller
     public function __invoke(Request $request)
     {
         try {
-            $accessToken = $this->ynabAccessTokenService->get($request);
+            $accessToken = $this->ynabAccessTokenService->get();
         } catch (Exception) {
             $accessToken = null;
         }

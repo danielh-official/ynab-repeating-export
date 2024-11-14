@@ -15,10 +15,10 @@ class GetScheduledTransactions
     ) {
     }
 
-    public function handle(Request $request, string $budgetId = 'default')
+    public function handle(string $budgetId = 'default')
     {
         return Http::withToken(
-            $this->ynabAccessTokenService->get($request)
+            $this->ynabAccessTokenService->get()
         )->get("https://api.ynab.com/v1/budgets/$budgetId/scheduled_transactions")->throw();
     }
 }
