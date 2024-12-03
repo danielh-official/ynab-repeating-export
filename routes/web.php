@@ -5,7 +5,6 @@ use App\Http\Controllers\GuideController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\SampleExportController;
-use App\Http\Controllers\YnabController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +28,4 @@ Route::post('/export', ExportController::class)->name('export');
 
 Route::post('/sample/export', SampleExportController::class)->name('sample.export');
 
-Route::prefix('ynab')->name('ynab.')->controller(YnabController::class)->group(function () {
-    Route::get('callback', 'callback')->name('callback');
-});
+Route::ynabSdkLaravelOauth();
