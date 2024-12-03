@@ -68,19 +68,21 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         foreach ($this->scheduledTransactions as $scheduledTransaction) {
             $subtransactions = data_get($scheduledTransaction, 'subtransactions', []);
 
-            foreach ($subtransactions as $subtransaction) {
-                $item = $this->parseTransaction($subtransaction, $scheduledTransaction);
-
-                if ($item) {
-                    $data->push($item);
-                }
-            }
-
-            if (! $subtransactions) {
+            if (empty($subtransactions)) {
                 $item = $this->parseTransaction($scheduledTransaction);
 
                 if ($item) {
                     $data->push($item);
+
+                    continue;
+                }
+            } else {
+                foreach ($subtransactions as $subtransaction) {
+                    $item = $this->parseSubtransaction($subtransaction, $scheduledTransaction);
+
+                    if ($item) {
+                        $data->push($item);
+                    }
                 }
             }
         }
@@ -88,7 +90,7 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
         $this->data = $data;
     }
 
-    private function parseTransaction(array $transaction, ?array $parentTransaction = null): ?array
+    private function parseTransaction(array $transaction): ?array
     {
         if (data_get($transaction, 'deleted', false)) {
             return null;
@@ -100,23 +102,13 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             return null;
         }
 
-        if (data_get($transaction, 'frequency')) {
-            $frequency = YnabAcceptedFrequency::tryFrom(data_get($transaction, 'frequency'));
-        } elseif ($parentTransaction) {
-            $frequency = YnabAcceptedFrequency::tryFrom(data_get($parentTransaction, 'frequency'));
-        } else {
-            return null;
-        }
+        $frequency = YnabAcceptedFrequency::tryFrom(data_get($transaction, 'frequency'));
 
-        if ($frequency === null) {
+        if (empty($frequency)) {
             return null;
         }
 
         $account = $this->accounts->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($transaction, 'account_id'));
-
-        if ($parentTransaction) {
-            $account = $this->accounts->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($parentTransaction, 'account_id'));
-        }
 
         $payee = $this->payees->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($transaction, 'payee_id'));
 
@@ -126,14 +118,6 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             'id',
             data_get($transaction, 'transfer_account_id')
         );
-
-        $parentPayeeName = null;
-
-        if ($parentTransaction) {
-            $parentPayee = $this->payees->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($parentTransaction, 'payee_id'));
-
-            $parentPayeeName = data_get($parentPayee, 'name');
-        }
 
         $amountPerWeek =
             YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
@@ -156,13 +140,9 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
                 YnabAcceptedFrequency::yearly
             );
 
-        $dateFirst = $parentTransaction ? data_get($parentTransaction, 'date_first') : data_get($transaction, 'date_first');
+        $dateFirst = data_get($transaction, 'date_first');
 
-        $dateNext = $parentTransaction ? data_get($parentTransaction, 'date_next') : data_get($transaction, 'date_next');
-
-        $flagColor = $parentTransaction ? data_get($parentTransaction, 'flag_color') : data_get($transaction, 'flag_color');
-
-        $parentMemo = $parentTransaction ? data_get($parentTransaction, 'memo') : null;
+        $dateNext = data_get($transaction, 'date_next');
 
         return [
             'date_first' => $dateFirst ? Carbon::parse($dateFirst)->format('Y-m-d') : null,
@@ -171,9 +151,96 @@ class RepeatingTransactionExport implements FromCollection, WithHeadings
             'raw_amount' => $amount,
             'amount' => abs($amount),
             'inflow_outflow' => $amount < 0 ? 'outflow' : 'inflow',
-            'parent_memo' => $parentMemo,
+            'parent_memo' => null,
             'memo' => data_get($transaction, 'memo'),
-            'flag_color' => $flagColor,
+            'flag_color' => data_get($transaction, 'flag_color'),
+            'account_name' => data_get($account, 'name'),
+            'payee_name' => data_get($payee, 'name'),
+            'parent_payee_name' => null,
+            'category_name' => data_get($category, 'name'),
+            'category_group_name' => data_get($category, 'category_group_name'),
+            'transfer_account_name' => data_get($transferAccount, 'name'),
+            'raw_amount_per_week' => $amountPerWeek,
+            'raw_amount_per_month' => $amountPerMonth,
+            'raw_amount_per_year' => $amountPerYear,
+            'amount_per_week' => abs($amountPerWeek),
+            'amount_per_month' => abs($amountPerMonth),
+            'amount_per_year' => abs($amountPerYear),
+        ];
+    }
+
+    private function parseSubtransaction(array $transaction, array $parentTransaction): ?array
+    {
+        if (data_get($transaction, 'deleted', false)) {
+            return null;
+        }
+
+        if (data_get($parentTransaction, 'deleted', false)) {
+            return null;
+        }
+
+        if (data_get($transaction, 'amount')) {
+            $amount = data_get($transaction, 'amount') / 1000;
+        } else {
+            return null;
+        }
+
+        $frequency = YnabAcceptedFrequency::tryFrom(data_get($parentTransaction, 'frequency'));
+
+        if (empty($frequency)) {
+            return null;
+        }
+
+        $account = $this->accounts->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($parentTransaction, 'account_id'));
+
+        $payee = $this->payees->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($transaction, 'payee_id'));
+
+        $category = $this->categories->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($transaction, 'category_id'));
+
+        $transferAccount = $this->accounts->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere(
+            'id',
+            data_get($transaction, 'transfer_account_id')
+        );
+
+        $parentPayee = $this->payees->filter(fn ($item) => $this->filterByNotDeleted($item))->firstWhere('id', data_get($parentTransaction, 'payee_id'));
+
+        $parentPayeeName = data_get($parentPayee, 'name');
+
+        $amountPerWeek =
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::weekly
+            );
+
+        $amountPerMonth =
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::monthly
+            );
+
+        $amountPerYear =
+            YnabAcceptedFrequency::convertAmountFromFrequencyToFrequency(
+                $amount,
+                $frequency,
+                YnabAcceptedFrequency::yearly
+            );
+
+        $dateFirst = data_get($parentTransaction, 'date_first');
+
+        $dateNext = data_get($parentTransaction, 'date_next');
+
+        return [
+            'date_first' => $dateFirst ? Carbon::parse($dateFirst)->format('Y-m-d') : null,
+            'date_next' => $dateNext ? Carbon::parse($dateNext)->format('Y-m-d') : null,
+            'frequency' => $frequency->value,
+            'raw_amount' => $amount,
+            'amount' => abs($amount),
+            'inflow_outflow' => $amount < 0 ? 'outflow' : 'inflow',
+            'parent_memo' => data_get($parentTransaction, 'memo'),
+            'memo' => data_get($transaction, 'memo'),
+            'flag_color' => data_get($parentTransaction, 'flag_color'),
             'account_name' => data_get($account, 'name'),
             'payee_name' => data_get($payee, 'name'),
             'parent_payee_name' => $parentPayeeName,

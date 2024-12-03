@@ -28,8 +28,8 @@ class HomeController extends Controller
         }
 
         $query = http_build_query([
-            'client_id' => config('ynab.client.id'),
-            'redirect_uri' => config('ynab.redirect_uri'),
+            'client_id' => config('ynab-sdk-laravel.client.id'),
+            'redirect_uri' => route(config('ynab-sdk-laravel.oauth.base_name') . '.callback'),
             'response_type' => 'code',
         ]);
 

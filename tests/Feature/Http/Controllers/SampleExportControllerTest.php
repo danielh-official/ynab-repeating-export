@@ -3,7 +3,7 @@
 use App\Exports\RepeatingTransactionExport;
 use App\Services\YnabAccessTokenService;
 
-it("exports a sample csv", function () {
+it('exports a sample csv', function () {
     $this->mock(YnabAccessTokenService::class);
 
     Excel::fake();
@@ -13,11 +13,13 @@ it("exports a sample csv", function () {
     $today = now()->format('Y-m-d');
 
     Excel::assertDownloaded("$today-ynab-repeating-transactions.csv", function (RepeatingTransactionExport $export) {
-        return $export->collection()->count() === 10;
+        $firstRecordInCollection = $export->collection()->first();
+
+        return $export->collection()->count() === 10 && $firstRecordInCollection['category_name'] && $firstRecordInCollection['category_group_name'] && $firstRecordInCollection['payee_name'] && $firstRecordInCollection['account_name'];
     });
 });
 
-it("exports a sample xlsx", function () {
+it('exports a sample xlsx', function () {
     $this->mock(YnabAccessTokenService::class);
 
     Excel::fake();
@@ -31,7 +33,7 @@ it("exports a sample xlsx", function () {
     Excel::assertDownloaded("$today-ynab-repeating-transactions.xlsx");
 });
 
-it("exports a sample csv if not excel", function () {
+it('exports a sample csv if not excel', function () {
     $this->mock(YnabAccessTokenService::class);
 
     Excel::fake();
