@@ -4,14 +4,13 @@
             Policy</a>
     </div>
     <div>
-        <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-           href="{{ route('guide') }}">Guide</a>
+        <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('guide') }}">Guide</a>
     </div>
 
     @if(config('meta.links.github'))
         <div>
             <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-               href="{{ config('meta.links.github') }}">
+                href="{{ config('meta.links.github') }}">
                 GitHub
             </a>
         </div>
@@ -20,7 +19,7 @@
     @if(config('meta.links.issues'))
         <div>
             <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-               href="{{ config('meta.links.issues') }}">
+                href="{{ config('meta.links.issues') }}">
                 Have Feedback?
             </a>
         </div>

@@ -29,19 +29,14 @@
         </form>
     @else
         <a class="inline-block px-12 py-3 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded active:text-blue-500 hover:bg-blue-700 focus:outline-none focus:ring"
-           href="{{ $auth_url }}">Authenticate YNAB</a>
+            href="{{ $auth_url }}">Authenticate YNAB</a>
     @endif
 
     <div class="mt-4 flex flex-col space-y-2 text-center justify-center">
         <button
             class="inline-block rounded bg-primary px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-            type="button"
-            data-te-collapse-init
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            data-te-target="#collapseExample"
-            aria-expanded="false"
-            aria-controls="collapseExample">
+            type="button" data-te-collapse-init data-te-ripple-init data-te-ripple-color="light"
+            data-te-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
             Want to test the export before connecting to YNAB?
         </button>
         <div class="!visible hidden" id="collapseExample" data-te-collapse-item>
