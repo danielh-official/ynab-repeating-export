@@ -1,7 +1,17 @@
 <x-layout>
     @isset($error)
-        <div class="absolute top-0 left-0 right-0 p-4 bg-red-500 text-white">
-            {{ $error }}
+    <div class="absolute top-0 left-0 right-0 p-4 bg-red-500 text-white">
+        {{ $error }}
+    </div>
+    @endif
+
+    @if($is_development)
+        <div class="absolute top-0 left-0 right-0 p-4 bg-black text-white text-center">
+            <p>This is a devleopment environment meant for testing. You use this site at your own risk!</p>
+            @if($production_link)
+                <a>Head to <a class="text-blue-600" href="{{ $production_link }}" target="_blank">{{ $production_link }}</a> to
+                    use the main site.</p>
+            @endif
         </div>
     @endif
 

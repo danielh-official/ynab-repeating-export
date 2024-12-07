@@ -38,6 +38,8 @@ class HomeController extends Controller
         return view('welcome', [
             'access_token' => $accessToken,
             'auth_url' => $authUrl,
+            'is_development' => app()->environment('development'),
+            'production_link' => config('meta.links.production'),
         ]);
     }
 }
