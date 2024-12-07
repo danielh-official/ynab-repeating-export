@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0d7e61c526d5a87978a63f6050804e4e",
+    "content-hash": "9d7edee44dd777ed52cfdafcd44ecedb",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -370,16 +370,16 @@
         },
         {
             "name": "danielh-official/ynab-sdk-laravel",
-            "version": "v0.1.0-alpha.4",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/danielh-official/ynab-sdk-laravel.git",
-                "reference": "3a2554d3e3046b57b2542e28c3ddf5c487e7dc35"
+                "reference": "03fd8e24ec49ca388ec48619ae49fb763b697b0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/danielh-official/ynab-sdk-laravel/zipball/3a2554d3e3046b57b2542e28c3ddf5c487e7dc35",
-                "reference": "3a2554d3e3046b57b2542e28c3ddf5c487e7dc35",
+                "url": "https://api.github.com/repos/danielh-official/ynab-sdk-laravel/zipball/03fd8e24ec49ca388ec48619ae49fb763b697b0e",
+                "reference": "03fd8e24ec49ca388ec48619ae49fb763b697b0e",
                 "shasum": ""
             },
             "require": {
@@ -439,15 +439,15 @@
                 "ynab-sdk-laravel"
             ],
             "support": {
-                "source": "https://github.com/danielh-official/ynab-sdk-laravel/tree/v0.1.0-alpha.4"
+                "source": "https://github.com/danielh-official/ynab-sdk-laravel/tree/v1.0.0"
             },
             "funding": [
                 {
-                    "url": "https://github.com/Daniel Haven",
+                    "url": "https://github.com/danielh-official",
                     "type": "github"
                 }
             ],
-            "time": "2024-12-07T17:07:29+00:00"
+            "time": "2024-12-07T18:41:01+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -11380,7 +11380,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "alpha",
+    "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -9,7 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "danielh-official/ynab-sdk-laravel": "v0.1.*",
+        "danielh-official/ynab-sdk-laravel": "^1.0",
         "fakerphp/faker": "^1.23.1",
         "guzzlehttp/guzzle": "^7.9.2",
         "laravel/forge-cli": "^1.8.3",
@@ -78,6 +78,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "alpha",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }
