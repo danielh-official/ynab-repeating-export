@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\YnabAccessTokenService;
+use App\Contracts\YnabAccessTokenServiceInterface;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
     public function __construct(
-        private readonly YnabAccessTokenService $ynabAccessTokenService,
+        private readonly YnabAccessTokenServiceInterface $ynabAccessTokenService,
     ) {
     }
 

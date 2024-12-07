@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Contracts\YnabAccessTokenServiceInterface;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use App\Services\YnabAccessTokenService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,7 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(YnabAccessTokenServiceInterface::class, function () {
+            return match (config('ynab-access-token-service.driver')) {
+                'session' => app(YnabAccessTokenService::class),
+                default => throw new \InvalidArgumentException('Invalid YNAB access token service driver.'),
+            };
+        });
     }
 
     /**

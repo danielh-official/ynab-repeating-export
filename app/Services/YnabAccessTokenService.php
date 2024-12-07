@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Contracts\YnabAccessTokenServiceInterface;
 use Exception;
 
-class YnabAccessTokenService
+class YnabAccessTokenService implements YnabAccessTokenServiceInterface
 {
     public function store(mixed $accessToken): void
     {
@@ -28,5 +29,10 @@ class YnabAccessTokenService
     public function delete(): void
     {
         session()->forget('ynab_access_token');
+    }
+
+    public function doesNotExist(): bool
+    {
+        return !session()->has('ynab_access_token');
     }
 }

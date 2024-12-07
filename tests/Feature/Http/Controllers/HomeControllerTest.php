@@ -1,11 +1,11 @@
 <?php
 
-use App\Services\YnabAccessTokenService;
+use App\Contracts\YnabAccessTokenServiceInterface;
 
 it("gets welcome view", function () {
     Config::set("ynab-sdk-laravel.client.id", "test123");
 
-    $this->mock(YnabAccessTokenService::class)->shouldReceive("get")->andReturn("test456");
+    $this->mock(YnabAccessTokenServiceInterface::class)->shouldReceive("get")->andReturn("test456");
 
     $this->get(route("home"))
         ->assertOk()
@@ -15,7 +15,7 @@ it("gets welcome view", function () {
 });
 
 it("handles exception and gets welcome view with null access token", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive("get")->andThrow(new Exception());
+    $this->mock(YnabAccessTokenServiceInterface::class)->shouldReceive("get")->andThrow(new Exception());
 
     $this->get(route("home"))
         ->assertOk()

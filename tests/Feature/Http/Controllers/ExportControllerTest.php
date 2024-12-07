@@ -1,5 +1,6 @@
 <?php
 
+use App\Contracts\YnabAccessTokenServiceInterface;
 use App\Exports\RepeatingTransactionExport;
 use App\Models\Account;
 use App\Models\Category;
@@ -7,10 +8,13 @@ use App\Models\CategoryGroup;
 use App\Models\Payee;
 use App\Models\ScheduledTransaction;
 use App\Models\Subtransaction;
-use App\Services\YnabAccessTokenService;
 
 it("exports a csv", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive('get')->andReturn('fake-token');
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     Excel::fake();
 
@@ -79,7 +83,11 @@ it("exports a csv", function () {
 });
 
 it("fails to export a csv due to failing to get scheduled transactions", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive('get')->andReturn('fake-token');
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     Excel::fake();
 
@@ -133,7 +141,11 @@ it("fails to export a csv due to failing to get scheduled transactions", functio
 });
 
 it("fails to export a csv due to failing to get accounts", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive('get')->andReturn('fake-token');
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     Excel::fake();
 
@@ -188,7 +200,11 @@ it("fails to export a csv due to failing to get accounts", function () {
 });
 
 it("fails to export a csv due to failing to get payees", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive('get')->andReturn('fake-token');
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     Excel::fake();
 
@@ -243,7 +259,11 @@ it("fails to export a csv due to failing to get payees", function () {
 });
 
 it("fails to export a csv due to failing to get categories", function () {
-    $this->mock(YnabAccessTokenService::class)->shouldReceive('get')->andReturn('fake-token');
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     Excel::fake();
 
@@ -297,7 +317,11 @@ it("fails to export a csv due to failing to get categories", function () {
 });
 
 it("fails to export a csv due to being unauthenticated", function () {
-    $mock = $this->mock(YnabAccessTokenService::class);
+    $mock = $this->mock(YnabAccessTokenServiceInterface::class);
+
+    $mock->shouldReceive('get')->andReturn('fake-token');
+
+    $mock->shouldReceive('doesNotExist')->andReturn(false);
 
     $mock->shouldReceive('get')->andReturn('fake-token');
 

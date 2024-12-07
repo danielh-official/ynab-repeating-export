@@ -2,10 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Services\YnabAccessTokenService;
+use App\Contracts\YnabAccessTokenServiceInterface;
 use DanielHaven\YnabSdkLaravel\Events\AccessTokenRetrieved;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class StoreAccessToken
 {
@@ -13,7 +11,7 @@ class StoreAccessToken
      * Create the event listener.
      */
     public function __construct(
-        protected YnabAccessTokenService $ynabAccessTokenService
+        protected YnabAccessTokenServiceInterface $ynabAccessTokenService
     ) {
         //
     }

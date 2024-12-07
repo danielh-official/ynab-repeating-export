@@ -1,11 +1,8 @@
 <?php
 
 use App\Exports\RepeatingTransactionExport;
-use App\Services\YnabAccessTokenService;
 
 it('exports a sample csv', function () {
-    $this->mock(YnabAccessTokenService::class);
-
     Excel::fake();
 
     $this->post(route('sample.export'))->assertOk();
@@ -20,8 +17,6 @@ it('exports a sample csv', function () {
 });
 
 it('exports a sample xlsx', function () {
-    $this->mock(YnabAccessTokenService::class);
-
     Excel::fake();
 
     $this->post(route('sample.export'), [
@@ -34,8 +29,6 @@ it('exports a sample xlsx', function () {
 });
 
 it('exports a sample csv if not excel', function () {
-    $this->mock(YnabAccessTokenService::class);
-
     Excel::fake();
 
     $this->post(route('sample.export'), [
