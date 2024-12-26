@@ -1,17 +1,17 @@
 <div class="flex flex-row gap-5 self-center text-sm">
     <div>
         <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('privacy') }}">Privacy
-            Policy</a>
+            Policy 🔐</a>
     </div>
     <div>
-        <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('guide') }}">Guide</a>
+        <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" href="{{ route('guide') }}">Guide 📋</a>
     </div>
 
     @if(config('meta.links.github'))
         <div>
             <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                 href="{{ config('meta.links.github') }}">
-                GitHub
+                GitHub 🔧
             </a>
         </div>
     @endif
@@ -20,7 +20,7 @@
         <div>
             <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                 href="{{ config('meta.links.issues') }}">
-                Have Feedback?
+                Have Feedback? 💬
             </a>
         </div>
     @endif
