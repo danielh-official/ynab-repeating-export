@@ -24,4 +24,13 @@
             </a>
         </div>
     @endif
+
+    @if(config('meta.links.funding'))
+        <div>
+            <a target="_blank" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                href="{{ config('meta.links.funding') }}">
+                Donate 💸
+            </a>
+        </div>
+    @endif
 </div>
