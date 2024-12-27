@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Contracts\YnabAccessTokenServiceInterface;
-use DanielHaven\YnabSdkLaravel\Events\AccessTokenRetrieved;
+use YnabSdkLaravel\YnabSdkLaravel\Events\AccessTokenRetrieved;
 
 class StoreAccessToken
 {

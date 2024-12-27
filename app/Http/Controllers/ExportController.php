@@ -6,7 +6,7 @@ use App\Actions\BuildFileName;
 use App\Actions\FlattenCategories;
 use App\Contracts\YnabAccessTokenServiceInterface;
 use App\Exports\RepeatingTransactionExport;
-use DanielHaven\YnabSdkLaravel\Ynab;
+use YnabSdkLaravel\YnabSdkLaravel\Ynab;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

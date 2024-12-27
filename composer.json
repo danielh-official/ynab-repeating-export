@@ -19,7 +19,8 @@
         "laravel/vapor-cli": "^1.65.2",
         "laravel/vapor-core": "^2.37.8",
         "maatwebsite/excel": "^3.1.61",
-        "sentry/sentry-laravel": ">=4.10.1"
+        "sentry/sentry-laravel": ">=4.10.1",
+        "ynab-sdk-laravel/ynab-sdk-laravel": "dev-main"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.2.2",
@@ -78,6 +79,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

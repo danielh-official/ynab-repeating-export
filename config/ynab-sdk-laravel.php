@@ -1,6 +1,6 @@
 <?php
 
-// config for DanielHaven/YnabSdkLaravel
+// config for YnabSdkLaravel/YnabSdkLaravel
 return [
     'base_url' => 'https://api.ynab.com/v1',
     'client' => [
