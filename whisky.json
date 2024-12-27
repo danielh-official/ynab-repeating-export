@@ -6,7 +6,7 @@
             "npx prettier . --write"
         ],
         "pre-push": [
-            "php artisan test --parallel --compact",
+            "php artisan test --parallel",
             "./vendor/bin/pint --dirty --repair",
             "npx prettier . --write"
         ]
