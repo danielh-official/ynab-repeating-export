@@ -7,10 +7,12 @@ it("gets welcome view", function () {
 
     $this->mock(YnabAccessTokenServiceInterface::class)->shouldReceive("get")->andReturn("test456");
 
+    $redirectUri = urlencode(config('app.url') . "/ynab-oauth/callback");
+
     $this->get(route("home"))
         ->assertOk()
         ->assertViewIs('welcome')
-        ->assertViewHas('auth_url', "https://app.ynab.com/oauth/authorize?client_id=test123&redirect_uri=https%3A%2F%2Fynab-repeating-export.test%2Fynab-oauth%2Fcallback&response_type=code")
+        ->assertViewHas('auth_url', "https://app.ynab.com/oauth/authorize?client_id=test123&redirect_uri=$redirectUri&response_type=code")
         ->assertViewHas('access_token', 'test456');
 });
 
