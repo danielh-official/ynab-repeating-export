@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2690bca01a22689d47b4f7c361866c9b",
+    "content-hash": "dfc0eb456872b4eab8604bf74b91a7b6",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -370,16 +370,16 @@
         },
         {
             "name": "danielh-official/ynab-sdk-laravel",
-            "version": "v1.0.4",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/danielh-official/ynab-sdk-laravel.git",
-                "reference": "7875f5523915ba5d8bb66e0b364a54d7bd3208cf"
+                "reference": "7588afd7da1de967f9e61430dfb909eb406801aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/danielh-official/ynab-sdk-laravel/zipball/7875f5523915ba5d8bb66e0b364a54d7bd3208cf",
-                "reference": "7875f5523915ba5d8bb66e0b364a54d7bd3208cf",
+                "url": "https://api.github.com/repos/danielh-official/ynab-sdk-laravel/zipball/7588afd7da1de967f9e61430dfb909eb406801aa",
+                "reference": "7588afd7da1de967f9e61430dfb909eb406801aa",
                 "shasum": ""
             },
             "require": {
@@ -442,7 +442,7 @@
             ],
             "support": {
                 "issues": "https://github.com/danielh-official/ynab-sdk-laravel/issues",
-                "source": "https://github.com/danielh-official/ynab-sdk-laravel/tree/v1.0.4"
+                "source": "https://github.com/danielh-official/ynab-sdk-laravel/tree/v1.0.5"
             },
             "funding": [
                 {
@@ -450,7 +450,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-12-11T02:55:01+00:00"
+            "abandoned": "ynab-sdk-laravel/ynab-sdk-laravel",
+            "time": "2024-12-27T17:14:18+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -7932,7 +7933,7 @@
         },
         {
             "name": "ynab-sdk-laravel/ynab-sdk-laravel",
-            "version": "dev-main",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ynab-sdk-laravel/ynab-sdk-laravel.git",
@@ -7965,7 +7966,6 @@
                 "projektgopher/whisky": "^0.7.0",
                 "spatie/laravel-ray": "^1.37.1"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -8003,7 +8003,7 @@
                 "ynab-sdk-laravel"
             ],
             "support": {
-                "source": "https://github.com/ynab-sdk-laravel/ynab-sdk-laravel/tree/main"
+                "source": "https://github.com/ynab-sdk-laravel/ynab-sdk-laravel/tree/v2.0.0"
             },
             "funding": [
                 {
@@ -11695,10 +11695,8 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": {
-        "ynab-sdk-laravel/ynab-sdk-laravel": 20
-    },
+    "minimum-stability": "stable",
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
